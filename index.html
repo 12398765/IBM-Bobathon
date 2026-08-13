@@ -1025,25 +1025,37 @@ window.switchAuthTab = (tab) => {
 // ─────────────────────────────────
 //  Google 登入（Redirect + Mock fallback）
 // ─────────────────────────────────
-window.signInWithGoogle = () => {
-  // Mock 模式：直接寫 localStorage 然後 reload
+window.signInWithGoogle = async () => {
   if (IS_LOCAL) {
-    localStorage.setItem('isLoggedIn', 'true');
-    localStorage.setItem('user', JSON.stringify({
-      name:   'Google 測試用戶',
-      email:  'test@gmail.com',
-      age:    25,
-      gender: '其他',
-      skills: ['智慧手機教學', '陪伴聊天']
-    }));
-    // reload 後 restoreMock() 同步執行，直接跳入主畫面
-    location.reload();
+    // 本機：用 Popup 讓使用者真正選帳號（file:// 無法用 Redirect）
+    try {
+      const { signInWithPopup } = await import("https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js");
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
+      currentUser = user;
+      const snap = await getDoc(doc(db, 'users', user.uid));
+      if (snap.exists()) {
+        currentUserData = snap.data();
+        enterApp();
+      } else {
+        currentUserData = {
+          name:   user.displayName || user.email.split('@')[0],
+          email:  user.email,
+          emoji:  '🙂',
+          skills: [],
+          age:    '',
+          gender: ''
+        };
+        showSkillSetup();
+      }
+    } catch(e) {
+      showErr('login-error', 'Google 登入失敗：' + e.message);
+    }
     return;
   }
   // 正式環境：使用 Redirect（避免 COOP 封鎖 Popup）
   try {
     await signInWithRedirect(auth, googleProvider);
-    // 頁面會跳轉，getRedirectResult 在 onAuthStateChanged 的 else 分支處理
   } catch(e) {
     showErr('login-error', 'Google 登入失敗：' + e.message);
   }
