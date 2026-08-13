@@ -1424,7 +1424,7 @@ window.switchMainPage = (name) => {
   document.getElementById(map[name]).classList.add('active');
   document.querySelectorAll('#main-nav .nav-btn').forEach((b,i) =>
     b.classList.toggle('active', ['home','post','profile'][i] === name));
-  if (name === 'profile') renderProfile();
+  if (name === 'profile') window.renderProfile && window.renderProfile();
   updateSidebarUser();
 };
 
@@ -1628,7 +1628,7 @@ function nowTime() {
   return new Date().toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' });
 }
 
-async function renderProfile() {
+window.renderProfile = async function renderProfile() {
   if (!currentUserData) return;
   document.getElementById('profile-name').textContent = currentUserData.name;
   document.getElementById('profile-meta').textContent = `${currentUserData.age} 歲・${currentUserData.gender}`;
@@ -1701,7 +1701,7 @@ window.acceptInvite = (id, btn) => {
     <div class="match-info-row"><span class="label">📝 需求</span><span class="value">${inv.msg}</span></div>`;
   document.getElementById('match-modal-contact').textContent = inv.contact || '（對方尚未填寫聯絡方式）';
   document.getElementById('match-modal-overlay').classList.add('open');
-  renderProfile();
+  window.renderProfile && window.renderProfile();
 };
 
 window.closeMatchModal = () => {
@@ -1798,7 +1798,7 @@ window.confirmReject = () => {
   if (inv) { inv.status = '已拒絕'; if (reason) inv.rejectReason = reason; }
   window.closeRejectModal();
   showToast('已拒絕邀請。');
-  renderProfile();
+  window.renderProfile && window.renderProfile();
 };
 
 // ─────────────────────────────────
