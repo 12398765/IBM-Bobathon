@@ -771,7 +771,8 @@
 // ═══════════════════════════════════════
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
-         signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup }
+         signOut, onAuthStateChanged, GoogleAuthProvider,
+         signInWithRedirect, getRedirectResult }
   from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
 import { getFirestore, collection, doc, setDoc, getDoc, addDoc, getDocs,
          query, orderBy, serverTimestamp, where }
@@ -799,6 +800,11 @@ let activeModalData = null;
 let history         = [];
 
 // ─────────────────────────────────
+//  判斷是否為 localhost（Mock 模式）
+// ─────────────────────────────────
+const IS_LOCAL = location.hostname === 'localhost' || location.hostname === '127.0.0.1' || location.protocol === 'file:';
+
+// ─────────────────────────────────
 //  Auth 狀態監聽
 // ─────────────────────────────────
 onAuthStateChanged(auth, async user => {
@@ -809,7 +815,6 @@ onAuthStateChanged(auth, async user => {
       currentUserData = snap.data();
       enterApp();
     } else {
-      // Google 首次登入 → 導去補填技能
       currentUserData = {
         name:   user.displayName || user.email.split('@')[0],
         email:  user.email,
@@ -821,6 +826,11 @@ onAuthStateChanged(auth, async user => {
       showSkillSetup();
     }
   } else {
+    // 檢查 Redirect 回來的結果
+    try {
+      const result = await getRedirectResult(auth);
+      if (result?.user) return; // onAuthStateChanged 會再觸發
+    } catch(e) { /* 忽略 */ }
     currentUser = null; currentUserData = null;
     showAuthPage();
   }
@@ -837,14 +847,35 @@ window.switchAuthTab = (tab) => {
 };
 
 // ─────────────────────────────────
-//  Google 登入
+//  Google 登入（Redirect + Mock fallback）
 // ─────────────────────────────────
 window.signInWithGoogle = async () => {
+  // Mock 模式：localhost / file:// 直接模擬登入
+  if (IS_LOCAL) {
+    const mockUid = 'mock-' + Date.now();
+    currentUser     = { uid: mockUid };
+    currentUserData = {
+      name:   '測試使用者',
+      email:  'test@gmail.com',
+      age:    25,
+      gender: '其他',
+      emoji:  '🙂',
+      skills: ['智慧手機教學', '陪伴聊天']
+    };
+    showToast('模擬 Google 登入成功！（Demo 模式）');
+    // 存入 Firestore 供後續功能使用
+    try {
+      await setDoc(doc(db, 'users', mockUid), { ...currentUserData, createdAt: serverTimestamp() });
+    } catch(e) { /* 離線時忽略 */ }
+    enterApp();
+    return;
+  }
+  // 正式環境：使用 Redirect（避免 COOP 封鎖 Popup）
   try {
-    await signInWithPopup(auth, googleProvider);
-    // onAuthStateChanged 會自動接手
+    await signInWithRedirect(auth, googleProvider);
+    // 頁面會跳轉，getRedirectResult 在 onAuthStateChanged 的 else 分支處理
   } catch(e) {
-    if (e.code !== 'auth/popup-closed-by-user') showErr('login-error', 'Google 登入失敗：' + e.message);
+    showErr('login-error', 'Google 登入失敗：' + e.message);
   }
 };
 
