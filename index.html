@@ -1664,9 +1664,36 @@ window.renderProfile = async function renderProfile() {
       : '<div class="empty-state"><span class="empty-icon">📭</span><p>尚無送出紀錄</p></div>';
   }
 
-  // ── 收到的邀請（本地模擬）
+  // ── 收到的邀請（Firestore 真實資料 + 本地示範合併）
   const rl = document.getElementById('recv-list');
   const badge = document.getElementById('recv-badge');
+
+  // 從 Firestore 讀取別人送給我的邀請
+  try {
+    const qRecv = query(
+      collection(db, 'invites'),
+      where('toUid', '==', currentUser.uid),
+      orderBy('createdAt', 'desc')
+    );
+    const recvSnap = await getDocs(qRecv);
+    if (!recvSnap.empty) {
+      // 有真實資料：用 Firestore 資料覆蓋示範資料
+      recvInvites = recvSnap.docs.map(d => {
+        const data = d.data();
+        return {
+          id:        d.id,
+          fromName:  data.fromName,
+          fromEmoji: data.fromEmoji || '🙂',
+          fromMeta:  data.fromMeta  || '',
+          contact:   data.contact   || '（對方尚未填寫聯絡方式）',
+          time:      data.time,
+          msg:       data.msg,
+          status:    data.status || '等待回覆',
+        };
+      });
+    }
+  } catch(e) { /* Firestore 失敗則保留現有的 recvInvites（示範資料）*/ }
+
   const pending = recvInvites.filter(r => r.status === '等待回覆');
   badge.textContent = pending.length ? `(${pending.length})` : '';
   rl.innerHTML = pending.length
