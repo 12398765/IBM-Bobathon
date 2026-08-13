@@ -1372,6 +1372,13 @@ function enterApp() {
   document.getElementById('navbar-user').innerHTML =
     `<span class="user-chip">👤 ${currentUserData.name}</span>
      <button class="btn-logout" onclick="window.doLogout()" style="background:rgba(255,255,255,.15);border:none;color:#fff;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;margin-left:4px">登出</button>`;
+  // 初始化示範收到的邀請（讓「收到的邀請」Tab 有內容可展示）
+  if (recvInvites.length === 0) {
+    recvInvites = [
+      { id:'r1', fromName:'志明', fromEmoji:'👷', fromMeta:'32 歲・男', contact:'0912-345-678', time:'本週日下午 3 點', msg:'你好，我看到你需要家具組裝的幫助，我剛好有空可以過去！', status:'等待回覆' },
+      { id:'r2', fromName:'小梅', fromEmoji:'👩‍💻', fromMeta:'25 歲・女', contact:'LINE: mei_helper', time:'週六上午 10 點', msg:'我可以幫你教手機，方便的話我到你家去。', status:'等待回覆' },
+    ];
+  }
   updateSidebarUser();
   switchMainPage('home');
   loadCards();
@@ -1388,9 +1395,14 @@ window.doLogout = () => {
   localStorage.removeItem('isLoggedIn');
   localStorage.removeItem('user');
   localStorage.removeItem('mockUser');
+  sentInvites = []; recvInvites = []; chatLogs = {};
   currentUser = null; currentUserData = null;
-  if (!IS_LOCAL) signOut(auth);
-  else showAuthPage();
+  if (!IS_LOCAL) {
+    signOut(auth);
+    showAuthPage();  // signOut 是非同步，不等它，直接切換畫面
+  } else {
+    showAuthPage();
+  }
 };
 
 // ─────────────────────────────────
