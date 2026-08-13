@@ -805,9 +805,27 @@ let history         = [];
 const IS_LOCAL = location.hostname === 'localhost' || location.hostname === '127.0.0.1' || location.protocol === 'file:';
 
 // ─────────────────────────────────
+//  頁面載入時恢復 Mock 登入狀態
+// ─────────────────────────────────
+const savedMock = localStorage.getItem('mockUser');
+if (IS_LOCAL && savedMock) {
+  try {
+    const mockData = JSON.parse(savedMock);
+    if (mockData.isLoggedIn) {
+      currentUser     = { uid: 'mock-demo-user' };
+      currentUserData = mockData;
+      // 等 DOM 就緒再跳轉
+      window.addEventListener('DOMContentLoaded', () => enterApp(), { once: true });
+    }
+  } catch(e) { localStorage.removeItem('mockUser'); }
+}
+
+// ─────────────────────────────────
 //  Auth 狀態監聽
 // ─────────────────────────────────
 onAuthStateChanged(auth, async user => {
+  // Mock 模式下跳過 Firebase Auth 監聽
+  if (IS_LOCAL && currentUserData?.isLoggedIn) return;
   if (user) {
     currentUser = user;
     const snap = await getDoc(doc(db, 'users', user.uid));
@@ -852,22 +870,35 @@ window.switchAuthTab = (tab) => {
 window.signInWithGoogle = async () => {
   // Mock 模式：localhost / file:// 直接模擬登入
   if (IS_LOCAL) {
-    const mockUid = 'mock-' + Date.now();
-    currentUser     = { uid: mockUid };
-    currentUserData = {
-      name:   '測試使用者',
-      email:  'test@gmail.com',
+    const mockUid = 'mock-demo-user';
+    const mockData = {
+      name:   'Google 測試用戶',
+      email:  'testuser@gmail.com',
       age:    25,
       gender: '其他',
       emoji:  '🙂',
-      skills: ['智慧手機教學', '陪伴聊天']
+      skills: ['智慧手機教學', '陪伴聊天'],
+      isLoggedIn: true
     };
-    showToast('模擬 Google 登入成功！（Demo 模式）');
-    // 存入 Firestore 供後續功能使用
-    try {
-      await setDoc(doc(db, 'users', mockUid), { ...currentUserData, createdAt: serverTimestamp() });
-    } catch(e) { /* 離線時忽略 */ }
-    enterApp();
+    // 寫入 localStorage 持久化
+    localStorage.setItem('mockUser', JSON.stringify(mockData));
+
+    currentUser     = { uid: mockUid };
+    currentUserData = mockData;
+
+    // 顯示提示
+    const t = document.getElementById('toast');
+    t.textContent = '✅ 模擬 Google 登入成功！（Demo 模式）';
+    t.classList.add('show');
+
+    // 1 秒後進入主畫面
+    setTimeout(async () => {
+      t.classList.remove('show');
+      try {
+        await setDoc(doc(db, 'users', mockUid), { ...mockData, createdAt: serverTimestamp() });
+      } catch(e) { /* Firestore 失敗時忽略，仍可進入 */ }
+      enterApp();
+    }, 1000);
     return;
   }
   // 正式環境：使用 Redirect（避免 COOP 封鎖 Popup）
@@ -1038,7 +1069,12 @@ function showAuthPage() {
   document.getElementById('page-register').classList.add('active');
 }
 
-window.doLogout = () => signOut(auth);
+window.doLogout = () => {
+  localStorage.removeItem('mockUser');
+  currentUser = null; currentUserData = null;
+  if (!IS_LOCAL) signOut(auth);
+  else showAuthPage();
+};
 
 // ─────────────────────────────────
 //  技能標籤互動（註冊頁）
