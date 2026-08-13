@@ -1572,7 +1572,7 @@ window.sendInvite = async () => {
 
   // 寫入 Firestore
   try {
-    await addDoc(collection(db,'invites'), {
+    const ref = await addDoc(collection(db,'invites'), {
       fromUid:   currentUser.uid,
       fromName:  currentUserData.name,
       fromEmoji: currentUserData.emoji || '🙂',
@@ -1584,11 +1584,13 @@ window.sendInvite = async () => {
       msg, time, status: '等待回覆',
       createdAt: serverTimestamp()
     });
+    console.log('✅ 邀請寫入成功 id:', ref.id, '| toUid:', toUid, '| fromUid:', currentUser.uid);
     sentInvites.push({ id: inviteId, toName, time, msg, status: '等待回覆' });
     window.closeModal();
     showToast('邀請已送出！等待對方選擇接受或拒絕。');
   } catch(e) {
-    showToast('送出失敗，請稍後再試');
+    console.error('❌ 邀請寫入失敗:', e);
+    showToast('送出失敗：' + e.message);
   }
 };
 
@@ -1676,14 +1678,15 @@ window.renderProfile = async function renderProfile() {
 
   // 從 Firestore 讀取別人送給我的邀請
   try {
+    console.log('🔍 查詢收到的邀請，我的 uid:', currentUser.uid);
     const qRecv = query(
       collection(db, 'invites'),
-      where('toUid', '==', currentUser.uid),
-      orderBy('createdAt', 'desc')
+      where('toUid', '==', currentUser.uid)
     );
     const recvSnap = await getDocs(qRecv);
+    console.log('📥 Firestore 收到邀請數量:', recvSnap.size);
+    recvSnap.docs.forEach(d => console.log('  邀請:', d.id, d.data()));
     if (!recvSnap.empty) {
-      // 有真實資料：用 Firestore 資料覆蓋示範資料
       recvInvites = recvSnap.docs.map(d => {
         const data = d.data();
         return {
@@ -1698,7 +1701,9 @@ window.renderProfile = async function renderProfile() {
         };
       });
     }
-  } catch(e) { /* Firestore 失敗則保留現有的 recvInvites（示範資料）*/ }
+  } catch(e) {
+    console.error('❌ 讀取收到邀請失敗:', e.message);
+  }
 
   const pending = recvInvites.filter(r => r.status === '等待回覆');
   badge.textContent = pending.length ? `(${pending.length})` : '';
