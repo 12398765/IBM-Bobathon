@@ -726,10 +726,10 @@
 
       <div class="sidebar-divider"></div>
       <div class="sidebar-title">快速操作</div>
-      <button class="sidebar-btn" onclick="switchMainPage('post')">
+      <button class="sidebar-btn" onclick="window.switchMainPage('post')">
         <span class="sidebar-icon">➕</span> 發布我的需求
       </button>
-      <button class="sidebar-btn" onclick="switchMainPage('profile')">
+      <button class="sidebar-btn" onclick="window.switchMainPage('profile')">
         <span class="sidebar-icon">📋</span> 查看互助紀錄
       </button>
 
@@ -938,6 +938,7 @@ let currentUser     = null;
 let currentUserData = null;
 let activeModalData = null;
 let history         = [];
+let _enteringApp    = false;  // 防止 onAuthStateChanged 與按鈕 callback 重複進入
 
 // ─────────────────────────────────
 //  判斷是否為 localhost（Mock 模式）
@@ -982,15 +983,28 @@ const IS_LOCAL = location.hostname === 'localhost' || location.hostname === '127
 //  Auth 狀態監聽
 // ─────────────────────────────────
 onAuthStateChanged(auth, async user => {
-  // Mock 模式下跳過 Firebase Auth 監聽
   if (window.__MOCK_LOGGED_IN__) return;
+  if (_enteringApp) return;  // 已由按鈕 callback 直接進入，跳過
   if (user) {
     currentUser = user;
-    const snap = await getDoc(doc(db, 'users', user.uid));
-    if (snap.exists()) {
-      currentUserData = snap.data();
-      enterApp();
-    } else {
+    try {
+      const snap = await getDoc(doc(db, 'users', user.uid));
+      if (snap.exists()) {
+        currentUserData = snap.data();
+        enterApp();
+      } else {
+        currentUserData = {
+          name:   user.displayName || user.email.split('@')[0],
+          email:  user.email,
+          emoji:  '🙂',
+          skills: [],
+          age:    '',
+          gender: ''
+        };
+        showSkillSetup();
+      }
+    } catch(e) {
+      // Firestore 讀取失敗（例如 file:// 環境）：用基本資料進入
       currentUserData = {
         name:   user.displayName || user.email.split('@')[0],
         email:  user.email,
@@ -999,13 +1013,12 @@ onAuthStateChanged(auth, async user => {
         age:    '',
         gender: ''
       };
-      showSkillSetup();
+      enterApp();
     }
   } else {
-    // 檢查 Redirect 回來的結果
     try {
       const result = await getRedirectResult(auth);
-      if (result?.user) return; // onAuthStateChanged 會再觸發
+      if (result?.user) return;
     } catch(e) { /* 忽略 */ }
     currentUser = null; currentUserData = null;
     showAuthPage();
@@ -1025,25 +1038,37 @@ window.switchAuthTab = (tab) => {
 // ─────────────────────────────────
 //  Google 登入（Redirect + Mock fallback）
 // ─────────────────────────────────
-window.signInWithGoogle = () => {
-  // Mock 模式：直接寫 localStorage 然後 reload
+window.signInWithGoogle = async () => {
   if (IS_LOCAL) {
-    localStorage.setItem('isLoggedIn', 'true');
-    localStorage.setItem('user', JSON.stringify({
-      name:   'Google 測試用戶',
-      email:  'test@gmail.com',
-      age:    25,
-      gender: '其他',
-      skills: ['智慧手機教學', '陪伴聊天']
-    }));
-    // reload 後 restoreMock() 同步執行，直接跳入主畫面
-    location.reload();
+    // 本機：用 Popup 讓使用者真正選帳號（file:// 無法用 Redirect）
+    try {
+      const { signInWithPopup } = await import("https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js");
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
+      currentUser = user;
+      const snap = await getDoc(doc(db, 'users', user.uid));
+      if (snap.exists()) {
+        currentUserData = snap.data();
+        enterApp();
+      } else {
+        currentUserData = {
+          name:   user.displayName || user.email.split('@')[0],
+          email:  user.email,
+          emoji:  '🙂',
+          skills: [],
+          age:    '',
+          gender: ''
+        };
+        showSkillSetup();
+      }
+    } catch(e) {
+      showErr('login-error', 'Google 登入失敗：' + e.message);
+    }
     return;
   }
   // 正式環境：使用 Redirect（避免 COOP 封鎖 Popup）
   try {
     await signInWithRedirect(auth, googleProvider);
-    // 頁面會跳轉，getRedirectResult 在 onAuthStateChanged 的 else 分支處理
   } catch(e) {
     showErr('login-error', 'Google 登入失敗：' + e.message);
   }
@@ -1139,7 +1164,20 @@ window.doEmailLogin = async () => {
   document.getElementById('login-error').style.display = 'none';
   btn.disabled = true; btn.textContent = '登入中...';
   try {
-    await signInWithEmailAndPassword(auth, email, pass);
+    const cred = await signInWithEmailAndPassword(auth, email, pass);
+    _enteringApp = true;
+    currentUser  = cred.user;
+    // 嘗試讀取 Firestore 用戶資料
+    try {
+      const snap = await getDoc(doc(db, 'users', cred.user.uid));
+      currentUserData = snap.exists()
+        ? snap.data()
+        : { name: cred.user.email.split('@')[0], email: cred.user.email, emoji:'🙂', skills:[], age:'', gender:'' };
+    } catch(e) {
+      currentUserData = { name: cred.user.email.split('@')[0], email: cred.user.email, emoji:'🙂', skills:[], age:'', gender:'' };
+    }
+    btn.disabled = false; btn.textContent = '登入 →';
+    enterApp();
   } catch(e) {
     showErr('login-error', e.code === 'auth/invalid-credential' ? '帳號或密碼錯誤' : e.message);
     btn.disabled = false; btn.textContent = '登入 →';
@@ -1169,11 +1207,17 @@ window.doEmailRegister = async () => {
   try {
     const cred = await createUserWithEmailAndPassword(auth, email, pass);
     const emojis = ['👨','👩','🧑','👷','👩‍💻','👩‍🍳'];
-    await setDoc(doc(db,'users', cred.user.uid), {
+    const userData = {
       name, age: parseInt(age), gender, email, skills,
       emoji: emojis[Math.floor(Math.random()*emojis.length)],
       createdAt: serverTimestamp()
-    });
+    };
+    await setDoc(doc(db,'users', cred.user.uid), userData);
+    _enteringApp    = true;
+    currentUser     = cred.user;
+    currentUserData = { ...userData, age: parseInt(age) };
+    btn.disabled = false; btn.textContent = '完成註冊 →';
+    enterApp();
   } catch(e) {
     let msg = e.message;
     if (e.code==='auth/email-already-in-use') msg = '此 Email 已被註冊，請直接登入';
@@ -1262,7 +1306,24 @@ function updateSidebarUser() {
 }
 
 // ─────────────────────────────────
-//  載入卡片（Firestore）
+//  示範假資料（Firestore 無資料時顯示）
+// ─────────────────────────────────
+const demoNeeds = [
+  { id:'n1', uid:'demo', name:'陳阿嬤', age:72, gender:'女', emoji:'👵', skills:['水電修繕'],     desc:'客廳燈泡壞了，需要協助更換，我住在三樓，爬梯子不方便。', time:'本週六下午' },
+  { id:'n2', uid:'demo', name:'小志',   age:35, gender:'男', emoji:'👨', skills:['智慧手機教學'], desc:'買了新手機不會用，希望有人能到家裡教我設定 LINE 與視訊通話。', time:'任一平日晚上' },
+  { id:'n3', uid:'demo', name:'林太太', age:58, gender:'女', emoji:'👩', skills:['代購代辦'],     desc:'行動不便，希望有人能幫我到傳統市場代購蔬菜，每週一次。', time:'每週一早上' },
+  { id:'n4', uid:'demo', name:'阿德',   age:45, gender:'男', emoji:'🧔', skills:['家具組裝'],     desc:'IKEA 書架買回來了，但一個人組裝困難，希望找人來協助。', time:'本週日上午' },
+];
+
+const demoOffers = [
+  { id:'o1', uid:'demo', name:'志明',   age:32, gender:'男', emoji:'👷',  skills:['水電修繕','家具組裝'],     desc:'具備5年水電工程經驗，可免費協助社區鄰里做基本修繕，週末有空。' },
+  { id:'o2', uid:'demo', name:'小梅',   age:25, gender:'女', emoji:'👩‍💻', skills:['智慧手機教學','電腦維修'], desc:'科技新貴，樂意教長輩使用智慧手機，有耐心，可到府服務。' },
+  { id:'o3', uid:'demo', name:'秀英姐', age:50, gender:'女', emoji:'👩‍🍳', skills:['傳統烹飪','陪伴聊天'],   desc:'擅長台灣傳統料理，也很樂意陪獨居長輩聊天、散步。' },
+  { id:'o4', uid:'demo', name:'大衛',   age:40, gender:'男', emoji:'🚗',  skills:['接送服務','代購代辦'],     desc:'有車、有空，歡迎需要代購或接送醫院的鄰居聯繫我。' },
+];
+
+// ─────────────────────────────────
+//  載入卡片（Firestore，無資料時顯示示範資料）
 // ─────────────────────────────────
 async function loadCards() {
   document.getElementById('need-cards').innerHTML  = '<div style="text-align:center;padding:40px;color:#9ca3af">載入中...</div>';
@@ -1273,18 +1334,18 @@ async function loadCards() {
     const q = query(collection(db,'needs'), orderBy('createdAt','desc'));
     const snap = await getDocs(q);
     const cards = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    renderNeedCards(cards);
+    renderNeedCards(cards.length ? cards : demoNeeds);
   } catch(e) {
-    document.getElementById('need-cards').innerHTML = '<div style="text-align:center;padding:40px;color:#9ca3af">⚠️ 載入失敗</div>';
+    renderNeedCards(demoNeeds);
   }
 
   // 其他用戶（提供幫助）
   try {
     const snap = await getDocs(collection(db,'users'));
     const users = snap.docs.filter(d => d.id !== currentUser?.uid).map(d => ({ id: d.id, ...d.data() }));
-    renderOfferCards(users);
+    renderOfferCards(users.length ? users : demoOffers);
   } catch(e) {
-    document.getElementById('offer-cards').innerHTML = '<div style="text-align:center;padding:40px;color:#9ca3af">⚠️ 載入失敗</div>';
+    renderOfferCards(demoOffers);
   }
 }
 
