@@ -726,10 +726,10 @@
 
       <div class="sidebar-divider"></div>
       <div class="sidebar-title">快速操作</div>
-      <button class="sidebar-btn" onclick="switchMainPage('post')">
+      <button class="sidebar-btn" onclick="window.switchMainPage('post')">
         <span class="sidebar-icon">➕</span> 發布我的需求
       </button>
-      <button class="sidebar-btn" onclick="switchMainPage('profile')">
+      <button class="sidebar-btn" onclick="window.switchMainPage('profile')">
         <span class="sidebar-icon">📋</span> 查看互助紀錄
       </button>
 
@@ -1279,7 +1279,24 @@ function updateSidebarUser() {
 }
 
 // ─────────────────────────────────
-//  載入卡片（Firestore）
+//  示範假資料（Firestore 無資料時顯示）
+// ─────────────────────────────────
+const demoNeeds = [
+  { id:'n1', uid:'demo', name:'陳阿嬤', age:72, gender:'女', emoji:'👵', skills:['水電修繕'],     desc:'客廳燈泡壞了，需要協助更換，我住在三樓，爬梯子不方便。', time:'本週六下午' },
+  { id:'n2', uid:'demo', name:'小志',   age:35, gender:'男', emoji:'👨', skills:['智慧手機教學'], desc:'買了新手機不會用，希望有人能到家裡教我設定 LINE 與視訊通話。', time:'任一平日晚上' },
+  { id:'n3', uid:'demo', name:'林太太', age:58, gender:'女', emoji:'👩', skills:['代購代辦'],     desc:'行動不便，希望有人能幫我到傳統市場代購蔬菜，每週一次。', time:'每週一早上' },
+  { id:'n4', uid:'demo', name:'阿德',   age:45, gender:'男', emoji:'🧔', skills:['家具組裝'],     desc:'IKEA 書架買回來了，但一個人組裝困難，希望找人來協助。', time:'本週日上午' },
+];
+
+const demoOffers = [
+  { id:'o1', uid:'demo', name:'志明',   age:32, gender:'男', emoji:'👷',  skills:['水電修繕','家具組裝'],     desc:'具備5年水電工程經驗，可免費協助社區鄰里做基本修繕，週末有空。' },
+  { id:'o2', uid:'demo', name:'小梅',   age:25, gender:'女', emoji:'👩‍💻', skills:['智慧手機教學','電腦維修'], desc:'科技新貴，樂意教長輩使用智慧手機，有耐心，可到府服務。' },
+  { id:'o3', uid:'demo', name:'秀英姐', age:50, gender:'女', emoji:'👩‍🍳', skills:['傳統烹飪','陪伴聊天'],   desc:'擅長台灣傳統料理，也很樂意陪獨居長輩聊天、散步。' },
+  { id:'o4', uid:'demo', name:'大衛',   age:40, gender:'男', emoji:'🚗',  skills:['接送服務','代購代辦'],     desc:'有車、有空，歡迎需要代購或接送醫院的鄰居聯繫我。' },
+];
+
+// ─────────────────────────────────
+//  載入卡片（Firestore，無資料時顯示示範資料）
 // ─────────────────────────────────
 async function loadCards() {
   document.getElementById('need-cards').innerHTML  = '<div style="text-align:center;padding:40px;color:#9ca3af">載入中...</div>';
@@ -1290,18 +1307,18 @@ async function loadCards() {
     const q = query(collection(db,'needs'), orderBy('createdAt','desc'));
     const snap = await getDocs(q);
     const cards = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    renderNeedCards(cards);
+    renderNeedCards(cards.length ? cards : demoNeeds);
   } catch(e) {
-    document.getElementById('need-cards').innerHTML = '<div style="text-align:center;padding:40px;color:#9ca3af">⚠️ 載入失敗</div>';
+    renderNeedCards(demoNeeds);
   }
 
   // 其他用戶（提供幫助）
   try {
     const snap = await getDocs(collection(db,'users'));
     const users = snap.docs.filter(d => d.id !== currentUser?.uid).map(d => ({ id: d.id, ...d.data() }));
-    renderOfferCards(users);
+    renderOfferCards(users.length ? users : demoOffers);
   } catch(e) {
-    document.getElementById('offer-cards').innerHTML = '<div style="text-align:center;padding:40px;color:#9ca3af">⚠️ 載入失敗</div>';
+    renderOfferCards(demoOffers);
   }
 }
 
