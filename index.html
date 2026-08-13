@@ -4,94 +4,173 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>社區微互助平台</title>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
   body {
     background: #f3f4f6;
-    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
-    min-height: 100vh; color: #1f2328;
+    font-family: -apple-system, "Segoe UI", system-ui, "Helvetica Neue", sans-serif;
+    min-height: 100vh;
+    color: #1f2328;
   }
 
-  /* Navbar */
+  /* ══════════════════════════════
+     頂部 Navbar
+  ══════════════════════════════ */
   .navbar {
-    background: #F97316; color: #fff;
-    padding: 0 40px; height: 60px;
-    display: flex; align-items: center; justify-content: space-between;
-    position: sticky; top: 0; z-index: 50;
+    background: #F97316;
+    color: #fff;
+    padding: 0 40px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 50;
     box-shadow: 0 2px 12px rgba(249,115,22,.3);
   }
-  .navbar-brand { font-size: 20px; font-weight: 800; }
-  .navbar-nav { display: flex; gap: 6px; }
-  .nav-btn {
-    background: rgba(255,255,255,.15); border: none; color: #fff;
-    padding: 7px 18px; border-radius: 20px;
-    font-size: 14px; font-weight: 600; cursor: pointer; transition: background .2s;
+  .navbar-brand {
+    font-size: 20px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
-  .nav-btn:hover, .nav-btn.active { background: rgba(255,255,255,.3); }
-  .navbar-user { font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
-  .user-chip { background: rgba(255,255,255,.2); padding: 5px 14px; border-radius: 20px; font-size: 13px; }
-  .btn-logout {
-    background: rgba(255,255,255,.15); border: none; color: #fff;
-    padding: 5px 12px; border-radius: 20px; font-size: 12px;
-    font-weight: 600; cursor: pointer;
+  .navbar-nav {
+    display: flex;
+    gap: 6px;
+  }
+  .nav-btn {
+    background: rgba(255,255,255,.15);
+    border: none;
+    color: #fff;
+    padding: 7px 18px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .2s;
+  }
+  .nav-btn:hover, .nav-btn.active {
+    background: rgba(255,255,255,.3);
+  }
+  .navbar-user {
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .user-chip {
+    background: rgba(255,255,255,.2);
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-size: 13px;
   }
 
-  /* 頁面 */
+  /* ══════════════════════════════
+     頁面容器
+  ══════════════════════════════ */
   .page { display: none; }
   .page.active { display: block; }
 
-  /* ── Auth 頁（登入/註冊） ── */
-  .auth-layout {
+  /* ══════════════════════════════
+     登入頁
+  ══════════════════════════════ */
+  .register-layout {
     min-height: calc(100vh - 60px);
-    display: flex; align-items: center; justify-content: center; padding: 48px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 24px;
   }
-  .auth-card {
-    background: #fff; border-radius: 20px;
-    border: 1.5px solid #e5e7eb; padding: 48px;
-    width: 100%; max-width: 480px;
+  .register-card {
+    background: #fff;
+    border-radius: 20px;
+    border: 1.5px solid #e5e7eb;
+    padding: 48px;
+    width: 100%;
+    max-width: 540px;
     box-shadow: 0 4px 24px rgba(0,0,0,.07);
   }
-  .auth-logo { text-align: center; margin-bottom: 32px; }
-  .auth-logo .icon { font-size: 52px; display: block; margin-bottom: 10px; }
-  .auth-logo h1 { font-size: 24px; font-weight: 800; color: #F97316; }
-  .auth-logo p { font-size: 13px; color: #6b7280; margin-top: 4px; }
+  .register-logo {
+    text-align: center;
+    margin-bottom: 36px;
+  }
+  .register-logo .icon { font-size: 56px; display: block; margin-bottom: 12px; }
+  .register-logo h1 { font-size: 26px; font-weight: 800; color: #F97316; }
+  .register-logo p { font-size: 14px; color: #6b7280; margin-top: 6px; }
 
-  .auth-tabs { display: flex; margin-bottom: 28px; border-bottom: 2px solid #f3f4f6; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .form-group { margin-bottom: 20px; }
+  .form-group label {
+    display: block; font-size: 13px; font-weight: 700;
+    color: #374151; margin-bottom: 7px;
+  }
+  .form-group input,
+  .form-group select {
+    width: 100%; padding: 11px 14px;
+    border: 1.5px solid #e5e7eb; border-radius: 10px;
+    font-size: 14px; color: #1f2328; outline: none;
+    transition: border-color .2s;
+  }
+  .form-group input:focus,
+  .form-group select:focus { border-color: #F97316; }
+
+  .skill-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+  .skill-tag {
+    padding: 7px 14px; border-radius: 20px;
+    border: 1.5px solid #e5e7eb; font-size: 13px;
+    cursor: pointer; user-select: none;
+    color: #6b7280; transition: all .15s;
+  }
+  .skill-tag.selected {
+    background: #F97316; border-color: #F97316; color: #fff;
+  }
+
+  .btn-primary {
+    width: 100%; padding: 14px;
+    background: #F97316; color: #fff;
+    border: none; border-radius: 12px;
+    font-size: 16px; font-weight: 700;
+    cursor: pointer; margin-top: 10px;
+    transition: background .2s;
+  }
+  .btn-primary:hover { background: #ea6c0a; }
+  .btn-primary:disabled { background: #fed7aa; cursor: not-allowed; }
+
+  /* Google 登入按鈕 */
+  .btn-google {
+    width: 100%; padding: 12px 16px;
+    background: #fff; color: #374151;
+    border: 1.5px solid #e5e7eb; border-radius: 12px;
+    font-size: 15px; font-weight: 600;
+    cursor: pointer; display: flex; align-items: center;
+    justify-content: center; gap: 10px; transition: all .2s;
+    margin-bottom: 16px;
+  }
+  .btn-google:hover { background: #f9fafb; border-color: #d1d5db; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+  .btn-google img { width: 20px; height: 20px; }
+
+  .divider {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 20px; color: #9ca3af; font-size: 13px;
+  }
+  .divider::before, .divider::after {
+    content: ''; flex: 1; height: 1px; background: #e5e7eb;
+  }
+
+  .auth-tabs { display: flex; margin-bottom: 24px; border-bottom: 2px solid #f3f4f6; }
   .auth-tab {
     flex: 1; padding: 10px; background: none; border: none;
     font-size: 14px; font-weight: 700; color: #9ca3af;
     cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px;
   }
   .auth-tab.active { color: #F97316; border-bottom-color: #F97316; }
-
   .auth-panel { display: none; }
   .auth-panel.active { display: block; }
-
-  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-  .form-group { margin-bottom: 16px; }
-  .form-group label { display: block; font-size: 13px; font-weight: 700; color: #374151; margin-bottom: 6px; }
-  .form-group input, .form-group select {
-    width: 100%; padding: 11px 14px;
-    border: 1.5px solid #e5e7eb; border-radius: 10px;
-    font-size: 14px; color: #1f2328; outline: none; transition: border-color .2s;
-  }
-  .form-group input:focus, .form-group select:focus { border-color: #F97316; }
-
-  .skill-tags { display: flex; flex-wrap: wrap; gap: 8px; }
-  .skill-tag {
-    padding: 7px 13px; border-radius: 20px;
-    border: 1.5px solid #e5e7eb; font-size: 12px;
-    cursor: pointer; user-select: none; color: #6b7280; transition: all .15s;
-  }
-  .skill-tag.selected { background: #F97316; border-color: #F97316; color: #fff; }
-
-  .btn-primary {
-    width: 100%; padding: 13px; background: #F97316; color: #fff;
-    border: none; border-radius: 12px; font-size: 15px; font-weight: 700;
-    cursor: pointer; margin-top: 8px; transition: background .2s;
-  }
-  .btn-primary:hover { background: #ea6c0a; }
-  .btn-primary:disabled { background: #fed7aa; cursor: not-allowed; }
 
   .error-msg {
     background: #fef2f2; color: #dc2626;
@@ -99,14 +178,24 @@
     padding: 10px 14px; font-size: 13px; margin-bottom: 14px; display: none;
   }
 
-  /* ── 主版面 ── */
+  /* ══════════════════════════════
+     首頁主版面（左右分欄）
+  ══════════════════════════════ */
   .home-layout {
-    display: grid; grid-template-columns: 260px 1fr;
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 0;
     min-height: calc(100vh - 60px);
   }
+
+  /* 左側邊欄 */
   .sidebar {
-    background: #fff; border-right: 1.5px solid #e5e7eb;
-    padding: 28px 20px; display: flex; flex-direction: column; gap: 6px;
+    background: #fff;
+    border-right: 1.5px solid #e5e7eb;
+    padding: 28px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
   }
   .sidebar-title {
     font-size: 11px; font-weight: 700; color: #9ca3af;
@@ -115,187 +204,307 @@
   }
   .sidebar-btn {
     display: flex; align-items: center; gap: 10px;
-    padding: 11px 14px; border-radius: 10px; border: none; background: none;
+    padding: 11px 14px; border-radius: 10px;
+    border: none; background: none;
     font-size: 14px; font-weight: 600; color: #4b5563;
-    cursor: pointer; transition: all .15s; text-align: left; width: 100%;
+    cursor: pointer; transition: all .15s; text-align: left;
   }
-  .sidebar-btn:hover, .sidebar-btn.active { background: #fff7ed; color: #F97316; }
+  .sidebar-btn:hover { background: #fff7ed; color: #F97316; }
+  .sidebar-btn.active { background: #fff7ed; color: #F97316; }
   .sidebar-icon { font-size: 18px; width: 24px; text-align: center; }
-  .sidebar-divider { height: 1px; background: #e5e7eb; margin: 10px 0; }
+
+  .sidebar-divider {
+    height: 1px; background: #e5e7eb; margin: 10px 0;
+  }
+
+  /* 使用者資訊區（sidebar 底部） */
   .sidebar-user {
-    margin-top: auto; background: #fff7ed; border-radius: 12px; padding: 14px;
+    margin-top: auto;
+    background: #fff7ed;
+    border-radius: 12px;
+    padding: 14px;
   }
-  .sidebar-user .name { font-size: 15px; font-weight: 800; }
+  .sidebar-user .name { font-size: 15px; font-weight: 800; color: #1f2328; }
   .sidebar-user .meta { font-size: 12px; color: #9ca3af; margin-top: 2px; }
-  .sidebar-user .tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+  .sidebar-user .tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
 
+  /* 主內容區 */
   .main-content { padding: 32px 36px; overflow-y: auto; }
-  .content-header { margin-bottom: 24px; }
-  .content-header h2 { font-size: 22px; font-weight: 800; }
-  .content-header p { font-size: 14px; color: #6b7280; margin-top: 3px; }
 
-  .tab-panel { display: none; }
-  .tab-panel.active { display: block; }
-
-  /* 카드 그리드 */
-  .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 18px; }
-  .card {
-    background: #fff; border-radius: 16px; border: 1.5px solid #e5e7eb;
-    padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,.04);
-    transition: box-shadow .2s, transform .2s; display: flex; flex-direction: column;
+  /* 頁頭 */
+  .content-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 24px;
   }
-  .card:hover { box-shadow: 0 6px 24px rgba(249,115,22,.12); transform: translateY(-2px); }
+  .content-header h2 { font-size: 22px; font-weight: 800; color: #1f2328; }
+  .content-header p  { font-size: 14px; color: #6b7280; margin-top: 3px; }
+
+  /* 分頁 Tabs（主內容區上方） */
+  .main-tabs {
+    display: flex; gap: 8px; margin-bottom: 24px;
+  }
+  .tab-btn {
+    padding: 9px 22px; border-radius: 20px;
+    border: 1.5px solid #e5e7eb;
+    background: #fff; font-size: 14px; font-weight: 600;
+    color: #6b7280; cursor: pointer; transition: all .2s;
+  }
+  .tab-btn.active {
+    background: #F97316; border-color: #F97316; color: #fff;
+  }
+
+  /* 卡片格線 */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 18px;
+  }
+
+  .card {
+    background: #fff; border-radius: 16px;
+    border: 1.5px solid #e5e7eb; padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.04);
+    transition: box-shadow .2s, transform .2s;
+    display: flex; flex-direction: column;
+  }
+  .card:hover {
+    box-shadow: 0 6px 24px rgba(249,115,22,.12);
+    transform: translateY(-2px);
+  }
+
   .card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
   .avatar {
     width: 48px; height: 48px; border-radius: 50%;
     background: #fff7ed; display: flex; align-items: center;
     justify-content: center; font-size: 24px; flex-shrink: 0;
   }
-  .card-name { font-size: 16px; font-weight: 700; }
+  .card-name { font-size: 16px; font-weight: 700; color: #1f2328; }
   .card-meta { font-size: 12px; color: #9ca3af; margin-top: 2px; }
+
   .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
   .tag {
-    padding: 4px 11px; border-radius: 20px; font-size: 11px; font-weight: 600;
-    background: #fff7ed; color: #F97316; border: 1px solid #fed7aa;
+    padding: 4px 11px; border-radius: 20px;
+    font-size: 11px; font-weight: 600;
+    background: #fff7ed; color: #F97316;
+    border: 1px solid #fed7aa;
   }
-  .card-desc { font-size: 13px; color: #4b5563; line-height: 1.6; margin-bottom: 16px; flex: 1; }
+
+  .card-desc {
+    font-size: 13px; color: #4b5563; line-height: 1.6;
+    margin-bottom: 16px; flex: 1;
+  }
+
   .btn-card {
-    width: 100%; padding: 11px; background: #F97316; color: #fff;
-    border: none; border-radius: 10px; font-size: 13px; font-weight: 700;
+    width: 100%; padding: 11px;
+    background: #F97316; color: #fff;
+    border: none; border-radius: 10px;
+    font-size: 13px; font-weight: 700;
     cursor: pointer; transition: background .2s;
   }
   .btn-card:hover { background: #ea6c0a; }
-  .btn-card.pending { background: #e5e7eb; color: #9ca3af; cursor: default; }
-  .btn-card.mine { background: #f3f4f6; color: #9ca3af; cursor: default; }
+  .btn-card.pending {
+    background: #e5e7eb; color: #9ca3af; cursor: default;
+  }
 
-  /* 發布頁 */
-  .post-layout { max-width: 640px; }
+  /* tab panel */
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ══════════════════════════════
+     發布需求頁
+  ══════════════════════════════ */
+  .post-layout {
+    max-width: 640px;
+  }
   .post-layout .form-group textarea {
-    width: 100%; padding: 11px 14px; border: 1.5px solid #e5e7eb;
-    border-radius: 10px; font-size: 14px; color: #1f2328;
+    width: 100%; padding: 11px 14px;
+    border: 1.5px solid #e5e7eb; border-radius: 10px;
+    font-size: 14px; color: #1f2328;
     outline: none; resize: vertical; min-height: 100px;
   }
   .post-layout .form-group textarea:focus { border-color: #F97316; }
   .post-layout .form-group input {
-    width: 100%; padding: 11px 14px; border: 1.5px solid #e5e7eb;
-    border-radius: 10px; font-size: 14px; outline: none;
+    width: 100%; padding: 11px 14px;
+    border: 1.5px solid #e5e7eb; border-radius: 10px;
+    font-size: 14px; color: #1f2328; outline: none;
   }
   .post-layout .form-group input:focus { border-color: #F97316; }
 
-  /* 我的頁 */
-  .profile-layout { display: grid; grid-template-columns: 300px 1fr; gap: 24px; max-width: 900px; }
-  .profile-card {
-    background: #fff; border-radius: 16px; border: 1.5px solid #e5e7eb;
-    padding: 28px; text-align: center;
+  /* ══════════════════════════════
+     我的頁
+  ══════════════════════════════ */
+  .profile-layout {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 24px;
+    max-width: 900px;
   }
-  .profile-avatar { font-size: 64px; margin-bottom: 14px; display: block; }
-  .profile-name { font-size: 22px; font-weight: 800; }
+  .profile-card {
+    background: #fff; border-radius: 16px;
+    border: 1.5px solid #e5e7eb; padding: 28px;
+    text-align: center;
+  }
+  .profile-avatar {
+    font-size: 64px; margin-bottom: 14px; display: block;
+  }
+  .profile-name { font-size: 22px; font-weight: 800; color: #1f2328; }
   .profile-meta { font-size: 14px; color: #9ca3af; margin-top: 4px; }
+  .profile-tags { justify-content: center; margin-top: 16px; }
+
   .history-card {
-    background: #fff; border-radius: 16px; border: 1.5px solid #e5e7eb; padding: 24px;
+    background: #fff; border-radius: 16px;
+    border: 1.5px solid #e5e7eb; padding: 24px;
   }
   .history-card h3 { font-size: 16px; font-weight: 800; margin-bottom: 16px; }
-  .history-item { padding: 14px 0; border-bottom: 1px solid #f3f4f6; }
+  .history-item {
+    padding: 14px 0; border-bottom: 1px solid #f3f4f6;
+  }
   .history-item:last-child { border-bottom: none; }
   .history-item .h-name { font-weight: 700; font-size: 15px; }
   .history-item .h-time { font-size: 12px; color: #9ca3af; margin-top: 2px; }
-  .history-item .h-msg { font-size: 13px; color: #4b5563; margin-top: 6px; }
+  .history-item .h-msg  { font-size: 13px; color: #4b5563; margin-top: 6px; }
   .status-badge {
-    display: inline-block; background: #fff7ed; color: #F97316;
-    padding: 3px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; margin-top: 8px;
+    display: inline-block;
+    background: #fff7ed; color: #F97316;
+    padding: 3px 12px; border-radius: 20px;
+    font-size: 11px; font-weight: 700; margin-top: 8px;
   }
 
-  /* Modal */
+  /* ══════════════════════════════
+     Modal
+  ══════════════════════════════ */
   .modal-overlay {
-    position: fixed; inset: 0; background: rgba(0,0,0,.45);
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.45);
     display: none; align-items: center; justify-content: center;
-    z-index: 200; padding: 24px;
+    z-index: 200;
+    padding: 24px;
   }
   .modal-overlay.open { display: flex; }
+
   .modal {
     background: #fff; width: 100%; max-width: 520px;
     border-radius: 20px; padding: 36px;
     box-shadow: 0 20px 60px rgba(0,0,0,.18);
     animation: fadeIn .2s ease;
   }
-  @keyframes fadeIn { from { transform: scale(.96); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-  .modal h3 { font-size: 20px; font-weight: 800; margin-bottom: 4px; }
+  @keyframes fadeIn {
+    from { transform: scale(.96); opacity: 0; }
+    to   { transform: scale(1);   opacity: 1; }
+  }
+
+  .modal h3 { font-size: 20px; font-weight: 800; color: #1f2328; margin-bottom: 4px; }
   .modal .modal-sub { font-size: 13px; color: #9ca3af; margin-bottom: 20px; }
-  .modal-detail { background: #f9fafb; border-radius: 12px; padding: 14px 16px; margin-bottom: 20px; font-size: 14px; color: #4b5563; line-height: 1.6; }
-  .modal label { display: block; font-size: 13px; font-weight: 700; color: #374151; margin-bottom: 7px; }
+
+  .modal-detail {
+    background: #f9fafb; border-radius: 12px;
+    padding: 14px 16px; margin-bottom: 20px;
+    font-size: 14px; color: #4b5563; line-height: 1.6;
+  }
+
+  .modal label {
+    display: block; font-size: 13px; font-weight: 700;
+    color: #374151; margin-bottom: 7px;
+  }
   .modal textarea {
-    width: 100%; padding: 11px 14px; border: 1.5px solid #e5e7eb;
-    border-radius: 10px; font-size: 14px; resize: none; outline: none;
-    height: 90px; margin-bottom: 16px;
+    width: 100%; padding: 11px 14px;
+    border: 1.5px solid #e5e7eb; border-radius: 10px;
+    font-size: 14px; color: #1f2328; resize: none;
+    outline: none; height: 90px; margin-bottom: 16px;
   }
   .modal textarea:focus { border-color: #F97316; }
   .modal input[type="text"] {
-    width: 100%; padding: 11px 14px; border: 1.5px solid #e5e7eb;
-    border-radius: 10px; font-size: 14px; outline: none; margin-bottom: 24px;
+    width: 100%; padding: 11px 14px;
+    border: 1.5px solid #e5e7eb; border-radius: 10px;
+    font-size: 14px; color: #1f2328;
+    outline: none; margin-bottom: 24px;
   }
   .modal input[type="text"]:focus { border-color: #F97316; }
+
   .btn-row { display: flex; gap: 12px; }
-  .btn-cancel { flex: 1; padding: 12px; background: #f3f4f6; color: #6b7280; border: none; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; }
-  .btn-send { flex: 2; padding: 12px; background: #F97316; color: #fff; border: none; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; }
+  .btn-cancel {
+    flex: 1; padding: 12px;
+    background: #f3f4f6; color: #6b7280;
+    border: none; border-radius: 10px;
+    font-size: 14px; font-weight: 700; cursor: pointer;
+  }
+  .btn-send {
+    flex: 2; padding: 12px;
+    background: #F97316; color: #fff;
+    border: none; border-radius: 10px;
+    font-size: 14px; font-weight: 700; cursor: pointer;
+  }
   .btn-send:hover { background: #ea6c0a; }
 
-  /* Toast */
+  /* ══════════════════════════════
+     Toast
+  ══════════════════════════════ */
   .toast {
     position: fixed; bottom: 32px; left: 50%;
     transform: translateX(-50%) translateY(20px);
     background: #1f2328; color: #fff;
-    padding: 12px 24px; border-radius: 24px; font-size: 14px;
-    white-space: nowrap; opacity: 0; transition: all .3s; z-index: 300;
-    pointer-events: none; box-shadow: 0 4px 20px rgba(0,0,0,.2);
+    padding: 12px 24px; border-radius: 24px;
+    font-size: 14px; white-space: nowrap;
+    opacity: 0; transition: all .3s; z-index: 300;
+    pointer-events: none;
+    box-shadow: 0 4px 20px rgba(0,0,0,.2);
   }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-  /* Loading */
-  .loading {
-    text-align: center; padding: 60px 20px; color: #9ca3af; font-size: 14px;
+  /* ══════════════════════════════
+     空狀態
+  ══════════════════════════════ */
+  .empty-state {
+    text-align: center; padding: 60px 20px; color: #9ca3af;
   }
-  .spinner {
-    display: inline-block; width: 32px; height: 32px;
-    border: 3px solid #e5e7eb; border-top-color: #F97316;
-    border-radius: 50%; animation: spin .8s linear infinite; margin-bottom: 12px;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  .empty-state { text-align: center; padding: 60px 20px; color: #9ca3af; }
   .empty-state .empty-icon { font-size: 48px; margin-bottom: 12px; display: block; }
+  .empty-state p { font-size: 15px; }
 </style>
 </head>
 <body>
 
-<!-- Navbar -->
+<!-- ════════════════════════════════
+     Navbar
+════════════════════════════════ -->
 <nav class="navbar">
   <div class="navbar-brand">🤝 社區微互助平台</div>
   <div class="navbar-nav" id="main-nav" style="display:none">
     <button class="nav-btn active" onclick="switchMainPage('home')">🏠 首頁</button>
-    <button class="nav-btn" onclick="switchMainPage('post')">➕ 發布需求</button>
-    <button class="nav-btn" onclick="switchMainPage('profile')">👤 我的</button>
+    <button class="nav-btn"       onclick="switchMainPage('post')">➕ 發布需求</button>
+    <button class="nav-btn"       onclick="switchMainPage('profile')">👤 我的</button>
   </div>
   <div class="navbar-user" id="navbar-user">
     <span style="font-size:13px;opacity:.85">請先登入</span>
   </div>
 </nav>
 
-<!-- ══ 頁面：Auth（登入/註冊） ══ -->
-<div class="page active" id="page-auth">
-  <div class="auth-layout">
-    <div class="auth-card">
-      <div class="auth-logo">
+<!-- ════════════════════════════════
+     頁面 1：註冊
+════════════════════════════════ -->
+<div class="page active" id="page-register">
+  <div class="register-layout">
+    <div class="register-card">
+
+      <div class="register-logo">
         <span class="icon">🤝</span>
         <h1>社區微互助平台</h1>
         <p>鄰里互助，從這裡開始</p>
       </div>
 
+      <!-- Google 登入 -->
+      <button class="btn-google" onclick="signInWithGoogle()">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G" />
+        使用 Google 帳號登入 / 註冊
+      </button>
+      <div class="divider">或使用 Email 手動填寫</div>
+
+      <!-- Auth Tabs -->
       <div class="auth-tabs">
         <button class="auth-tab active" onclick="switchAuthTab('login')">登入</button>
         <button class="auth-tab" onclick="switchAuthTab('register')">註冊新帳號</button>
       </div>
 
-      <!-- 登入 -->
+      <!-- 登入 Panel -->
       <div class="auth-panel active" id="panel-login">
         <div class="error-msg" id="login-error"></div>
         <div class="form-group">
@@ -306,10 +515,10 @@
           <label>密碼</label>
           <input type="password" id="login-password" placeholder="請輸入密碼" />
         </div>
-        <button class="btn-primary" id="btn-login" onclick="doLogin()">登入 →</button>
+        <button class="btn-primary" id="btn-login" onclick="doEmailLogin()">登入 →</button>
       </div>
 
-      <!-- 註冊 -->
+      <!-- 註冊 Panel -->
       <div class="auth-panel" id="panel-register">
         <div class="error-msg" id="register-error"></div>
         <div class="form-row">
@@ -319,7 +528,7 @@
           </div>
           <div class="form-group">
             <label>年齡</label>
-            <input type="number" id="reg-age" placeholder="28" min="1" max="120" />
+            <input type="number" id="reg-age" placeholder="例如：28" min="1" max="120" />
           </div>
         </div>
         <div class="form-group">
@@ -352,63 +561,110 @@
             <span class="skill-tag" data-skill="電腦維修">💻 電腦維修</span>
           </div>
         </div>
-        <button class="btn-primary" id="btn-register" onclick="doRegister()">完成註冊 →</button>
+        <button class="btn-primary" id="btn-register" onclick="doEmailRegister()">完成註冊 →</button>
       </div>
 
     </div>
   </div>
 </div>
 
-<!-- ══ 頁面：首頁 ══ -->
+<!-- ════════════════════════════════
+     頁面 2：首頁
+════════════════════════════════ -->
 <div class="page" id="page-home">
   <div class="home-layout">
+
+    <!-- 左側邊欄 -->
     <aside class="sidebar">
       <div class="sidebar-title">探索</div>
-      <button class="sidebar-btn active" id="sb-need" onclick="switchTab('need')"><span class="sidebar-icon">🙋</span> 需要幫助</button>
-      <button class="sidebar-btn" id="sb-offer" onclick="switchTab('offer')"><span class="sidebar-icon">💪</span> 提供幫助</button>
+      <button class="sidebar-btn active" id="sb-need" onclick="switchTab('need')">
+        <span class="sidebar-icon">🙋</span> 需要幫助
+      </button>
+      <button class="sidebar-btn" id="sb-offer" onclick="switchTab('offer')">
+        <span class="sidebar-icon">💪</span> 提供幫助
+      </button>
+
       <div class="sidebar-divider"></div>
       <div class="sidebar-title">快速操作</div>
-      <button class="sidebar-btn" onclick="switchMainPage('post')"><span class="sidebar-icon">➕</span> 發布我的需求</button>
-      <button class="sidebar-btn" onclick="switchMainPage('profile')"><span class="sidebar-icon">📋</span> 查看互助紀錄</button>
+      <button class="sidebar-btn" onclick="switchMainPage('post')">
+        <span class="sidebar-icon">➕</span> 發布我的需求
+      </button>
+      <button class="sidebar-btn" onclick="switchMainPage('profile')">
+        <span class="sidebar-icon">📋</span> 查看互助紀錄
+      </button>
+
+      <!-- 使用者資訊 -->
       <div class="sidebar-user">
-        <div class="name" id="sb-name">—</div>
-        <div class="meta" id="sb-meta">—</div>
-        <div class="tags" id="sb-tags"></div>
+        <div class="name" id="sb-user-name">—</div>
+        <div class="meta" id="sb-user-meta">—</div>
+        <div class="tags" id="sb-user-tags"></div>
       </div>
     </aside>
+
+    <!-- 右側主內容 -->
     <main class="main-content">
+
+      <!-- 需要幫助 Tab -->
       <div class="tab-panel active" id="tab-need">
-        <div class="content-header"><h2>🙋 需要幫助</h2><p>社區鄰里正在尋求協助，你能幫上忙嗎？</p></div>
-        <div class="card-grid" id="need-cards"><div class="loading"><div class="spinner"></div><br>載入中...</div></div>
+        <div class="content-header">
+          <div>
+            <h2>🙋 需要幫助</h2>
+            <p>以下是社區鄰里正在尋求協助的需求，你能幫上忙嗎？</p>
+          </div>
+        </div>
+        <div class="card-grid" id="need-cards"></div>
       </div>
+
+      <!-- 提供幫助 Tab -->
       <div class="tab-panel" id="tab-offer">
-        <div class="content-header"><h2>💪 提供幫助</h2><p>願意提供協助的社區夥伴，找找看誰能幫你！</p></div>
-        <div class="card-grid" id="offer-cards"><div class="loading"><div class="spinner"></div><br>載入中...</div></div>
+        <div class="content-header">
+          <div>
+            <h2>💪 提供幫助</h2>
+            <p>以下是願意提供協助的社區夥伴，找找看誰能幫你！</p>
+          </div>
+        </div>
+        <div class="card-grid" id="offer-cards"></div>
       </div>
+
     </main>
   </div>
 </div>
 
-<!-- ══ 頁面：發布需求 ══ -->
+<!-- ════════════════════════════════
+     頁面 3：發布需求
+════════════════════════════════ -->
 <div class="page" id="page-post">
   <div class="home-layout">
     <aside class="sidebar">
       <div class="sidebar-title">探索</div>
-      <button class="sidebar-btn" onclick="switchMainPage('home');switchTab('need')"><span class="sidebar-icon">🙋</span> 需要幫助</button>
-      <button class="sidebar-btn" onclick="switchMainPage('home');switchTab('offer')"><span class="sidebar-icon">💪</span> 提供幫助</button>
+      <button class="sidebar-btn" onclick="switchMainPage('home'); switchTab('need')">
+        <span class="sidebar-icon">🙋</span> 需要幫助
+      </button>
+      <button class="sidebar-btn" onclick="switchMainPage('home'); switchTab('offer')">
+        <span class="sidebar-icon">💪</span> 提供幫助
+      </button>
       <div class="sidebar-divider"></div>
-      <button class="sidebar-btn active"><span class="sidebar-icon">➕</span> 發布我的需求</button>
-      <button class="sidebar-btn" onclick="switchMainPage('profile')"><span class="sidebar-icon">📋</span> 查看互助紀錄</button>
+      <button class="sidebar-btn active">
+        <span class="sidebar-icon">➕</span> 發布我的需求
+      </button>
+      <button class="sidebar-btn" onclick="switchMainPage('profile')">
+        <span class="sidebar-icon">📋</span> 查看互助紀錄
+      </button>
       <div class="sidebar-user">
-        <div class="name" id="sb-name2">—</div>
-        <div class="meta" id="sb-meta2">—</div>
+        <div class="name" id="sb-user-name2">—</div>
+        <div class="meta" id="sb-user-meta2">—</div>
       </div>
     </aside>
     <main class="main-content">
-      <div class="content-header"><h2>➕ 發布求助需求</h2><p>告訴社區夥伴你需要什麼幫助</p></div>
+      <div class="content-header">
+        <div>
+          <h2>➕ 發布求助需求</h2>
+          <p>告訴社區夥伴你需要什麼幫助</p>
+        </div>
+      </div>
       <div class="post-layout">
         <div class="form-group">
-          <label>需求類型（可多選）</label>
+          <label>需求類型（技能標籤，可多選）</label>
           <div class="skill-tags" id="post-skill-tags">
             <span class="skill-tag" data-skill="水電修繕">🔧 水電修繕</span>
             <span class="skill-tag" data-skill="智慧手機教學">📱 智慧手機教學</span>
@@ -422,7 +678,7 @@
         </div>
         <div class="form-group">
           <label>需求描述</label>
-          <textarea id="post-desc" placeholder="例如：客廳燈泡壞了，需要幫忙更換..."></textarea>
+          <textarea id="post-desc" placeholder="例如：客廳燈泡壞了，需要幫忙更換，我家在三樓..."></textarea>
         </div>
         <div class="form-group">
           <label>希望時間</label>
@@ -434,87 +690,117 @@
   </div>
 </div>
 
-<!-- ══ 頁面：我的 ══ -->
+<!-- ════════════════════════════════
+     頁面 4：我的
+════════════════════════════════ -->
 <div class="page" id="page-profile">
   <div class="home-layout">
     <aside class="sidebar">
       <div class="sidebar-title">探索</div>
-      <button class="sidebar-btn" onclick="switchMainPage('home');switchTab('need')"><span class="sidebar-icon">🙋</span> 需要幫助</button>
-      <button class="sidebar-btn" onclick="switchMainPage('home');switchTab('offer')"><span class="sidebar-icon">💪</span> 提供幫助</button>
+      <button class="sidebar-btn" onclick="switchMainPage('home'); switchTab('need')">
+        <span class="sidebar-icon">🙋</span> 需要幫助
+      </button>
+      <button class="sidebar-btn" onclick="switchMainPage('home'); switchTab('offer')">
+        <span class="sidebar-icon">💪</span> 提供幫助
+      </button>
       <div class="sidebar-divider"></div>
-      <button class="sidebar-btn" onclick="switchMainPage('post')"><span class="sidebar-icon">➕</span> 發布我的需求</button>
-      <button class="sidebar-btn active"><span class="sidebar-icon">📋</span> 查看互助紀錄</button>
+      <button class="sidebar-btn" onclick="switchMainPage('post')">
+        <span class="sidebar-icon">➕</span> 發布我的需求
+      </button>
+      <button class="sidebar-btn active">
+        <span class="sidebar-icon">📋</span> 查看互助紀錄
+      </button>
       <div class="sidebar-user">
-        <div class="name" id="sb-name3">—</div>
-        <div class="meta" id="sb-meta3">—</div>
+        <div class="name" id="sb-user-name3">—</div>
+        <div class="meta" id="sb-user-meta3">—</div>
       </div>
     </aside>
     <main class="main-content">
-      <div class="content-header"><h2>👤 我的資料</h2><p>查看個人技能與互助紀錄</p></div>
+      <div class="content-header">
+        <div>
+          <h2>👤 我的資料</h2>
+          <p>查看個人技能與互助紀錄</p>
+        </div>
+      </div>
       <div class="profile-layout">
         <div class="profile-card">
           <span class="profile-avatar">🙂</span>
           <div class="profile-name" id="profile-name">—</div>
           <div class="profile-meta" id="profile-meta">—</div>
-          <div class="tags" style="justify-content:center;margin-top:14px" id="profile-tags"></div>
+          <div class="tags profile-tags" id="profile-tags"></div>
         </div>
         <div class="history-card">
           <h3>📋 互助紀錄</h3>
-          <div id="history-list"><div class="empty-state"><span class="empty-icon">📭</span><p>尚無互助紀錄</p></div></div>
+          <div id="history-list">
+            <div class="empty-state">
+              <span class="empty-icon">📭</span>
+              <p>尚無互助紀錄</p>
+            </div>
+          </div>
         </div>
       </div>
     </main>
   </div>
 </div>
 
-<!-- Modal -->
+<!-- ════════════════════════════════
+     Modal
+════════════════════════════════ -->
 <div class="modal-overlay" id="modal-overlay">
   <div class="modal">
     <h3 id="modal-title">聯絡對方</h3>
     <div class="modal-sub" id="modal-sub"></div>
-    <div class="modal-detail" id="modal-detail"></div>
-    <label>具體說明</label>
+    <div class="modal-detail" id="modal-detail-text"></div>
+    <label>具體說明你的需求或能提供的協助</label>
     <textarea id="modal-msg" placeholder="例如：我的燈泡在三樓客廳，週六下午方便嗎？"></textarea>
     <label>希望時間</label>
     <input type="text" id="modal-time" placeholder="例如：週六下午 2 點" />
     <div class="btn-row">
       <button class="btn-cancel" onclick="closeModal()">取消</button>
-      <button class="btn-send" onclick="sendInvite()">送出邀請 ✉️</button>
+      <button class="btn-send"   onclick="sendInvite()">送出邀請 ✉️</button>
     </div>
   </div>
 </div>
 
+<!-- Toast -->
 <div class="toast" id="toast"></div>
 
-<!-- Firebase SDK -->
 <script type="module">
+// ═══════════════════════════════════════
+//  Firebase 初始化
+// ═══════════════════════════════════════
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged }
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
+         signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup }
   from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
-import { getFirestore, collection, doc, setDoc, getDoc, addDoc, getDocs, query, orderBy, serverTimestamp, where }
+import { getFirestore, collection, doc, setDoc, getDoc, addDoc, getDocs,
+         query, orderBy, serverTimestamp, where }
   from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
-// ── Firebase 初始化 ──
 const firebaseConfig = {
   apiKey: "AIzaSyCPUgN5iMSdnU-Ofzjs_MmXbwidj4r_ar8",
   authDomain: "ibm-mvp-fadb1.firebaseapp.com",
   projectId: "ibm-mvp-fadb1",
   storageBucket: "ibm-mvp-fadb1.firebasestorage.app",
   messagingSenderId: "861511578301",
-  appId: "1:861511578301:web:e6c69895e4fe80f5e1bdd4",
-  measurementId: "G-CRW8L8C6R0"
+  appId: "1:861511578301:web:e6c69895e4fe80f5e1bdd4"
 };
+const app    = initializeApp(firebaseConfig);
+const auth   = getAuth(app);
+const db     = getFirestore(app);
+const googleProvider = new GoogleAuthProvider();
 
-const app  = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db   = getFirestore(app);
-
-// ── 狀態 ──
-let currentUser = null;
+// ─────────────────────────────────
+//  狀態
+// ─────────────────────────────────
+let currentUser     = null;
 let currentUserData = null;
 let activeModalData = null;
+let history         = [];
 
-// ── Auth 狀態監聽 ──
+// ─────────────────────────────────
+//  Auth 狀態監聽
+// ─────────────────────────────────
 onAuthStateChanged(auth, async user => {
   if (user) {
     currentUser = user;
@@ -523,23 +809,193 @@ onAuthStateChanged(auth, async user => {
       currentUserData = snap.data();
       enterApp();
     } else {
-      // 帳號存在但無 profile，導回登入
-      await signOut(auth);
+      // Google 首次登入 → 導去補填技能
+      currentUserData = {
+        name:   user.displayName || user.email.split('@')[0],
+        email:  user.email,
+        emoji:  '🙂',
+        skills: [],
+        age:    '',
+        gender: ''
+      };
+      showSkillSetup();
     }
   } else {
-    currentUser = null;
-    currentUserData = null;
+    currentUser = null; currentUserData = null;
     showAuthPage();
   }
 });
 
-// ── 進入 App ──
+// ─────────────────────────────────
+//  Auth Tab 切換
+// ─────────────────────────────────
+window.switchAuthTab = (tab) => {
+  document.querySelectorAll('.auth-tab').forEach((t,i) =>
+    t.classList.toggle('active', (i===0&&tab==='login')||(i===1&&tab==='register')));
+  document.querySelectorAll('.auth-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + tab).classList.add('active');
+};
+
+// ─────────────────────────────────
+//  Google 登入
+// ─────────────────────────────────
+window.signInWithGoogle = async () => {
+  try {
+    await signInWithPopup(auth, googleProvider);
+    // onAuthStateChanged 會自動接手
+  } catch(e) {
+    if (e.code !== 'auth/popup-closed-by-user') showErr('login-error', 'Google 登入失敗：' + e.message);
+  }
+};
+
+// ─────────────────────────────────
+//  Google 首次登入 → 補填技能頁
+// ─────────────────────────────────
+function showSkillSetup() {
+  // 顯示技能補填 Modal
+  const overlay = document.createElement('div');
+  overlay.id = 'skill-setup-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:300;padding:24px';
+  overlay.innerHTML = `
+    <div style="background:#fff;border-radius:20px;padding:36px;max-width:480px;width:100%">
+      <div style="text-align:center;margin-bottom:24px">
+        <div style="font-size:40px;margin-bottom:8px">👋</div>
+        <h2 style="font-size:20px;font-weight:800;color:#1f2328">歡迎，${currentUserData.name}！</h2>
+        <p style="font-size:13px;color:#6b7280;margin-top:4px">請補充一些資料讓大家認識你</p>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
+        <div>
+          <label style="display:block;font-size:13px;font-weight:700;color:#374151;margin-bottom:6px">年齡</label>
+          <input type="number" id="setup-age" placeholder="例如：28"
+            style="width:100%;padding:10px 12px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:14px;outline:none"/>
+        </div>
+        <div>
+          <label style="display:block;font-size:13px;font-weight:700;color:#374151;margin-bottom:6px">性別</label>
+          <select id="setup-gender"
+            style="width:100%;padding:10px 12px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:14px;outline:none">
+            <option value="">請選擇</option>
+            <option value="男">男</option>
+            <option value="女">女</option>
+            <option value="其他">其他</option>
+          </select>
+        </div>
+      </div>
+      <label style="display:block;font-size:13px;font-weight:700;color:#374151;margin-bottom:8px">我具備的技能（可多選）</label>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px" id="setup-skills">
+        ${['🔧 水電修繕','📱 智慧手機教學','🍳 傳統烹飪','🛒 代購代辦','🪑 家具組裝','💬 陪伴聊天','🚗 接送服務','💻 電腦維修']
+          .map(s => `<span onclick="this.classList.toggle('sel')"
+            style="padding:7px 13px;border-radius:20px;border:1.5px solid #e5e7eb;font-size:12px;cursor:pointer;transition:all .15s"
+            data-skill="${s.replace(/^.+ /,'')}"
+            class="setup-skill-tag">${s}</span>`).join('')}
+      </div>
+      <button onclick="window.completeSetup()"
+        style="width:100%;padding:13px;background:#F97316;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer">
+        完成設定，進入平台 →
+      </button>
+    </div>`;
+  // 技能標籤切換樣式
+  overlay.querySelectorAll('.setup-skill-tag').forEach(t => {
+    t.addEventListener('click', () => {
+      const sel = t.classList.contains('sel');
+      t.style.background    = sel ? '' : '#F97316';
+      t.style.borderColor   = sel ? '#e5e7eb' : '#F97316';
+      t.style.color         = sel ? '' : '#fff';
+    });
+  });
+  document.body.appendChild(overlay);
+}
+
+window.completeSetup = async () => {
+  const age    = document.getElementById('setup-age').value.trim();
+  const gender = document.getElementById('setup-gender').value;
+  const skills = [...document.querySelectorAll('#setup-skills .setup-skill-tag.sel')]
+                   .map(t => t.dataset.skill);
+  if (!age)    return alert('請填寫年齡');
+  if (!gender) return alert('請選擇性別');
+
+  const emojis = ['👨','👩','🧑','👷','👩‍💻','👩‍🍳','🚗'];
+  await setDoc(doc(db, 'users', currentUser.uid), {
+    name:   currentUserData.name,
+    email:  currentUserData.email,
+    age:    parseInt(age),
+    gender, skills,
+    emoji:  emojis[Math.floor(Math.random()*emojis.length)],
+    createdAt: serverTimestamp()
+  });
+  document.getElementById('skill-setup-overlay')?.remove();
+  const snap = await getDoc(doc(db, 'users', currentUser.uid));
+  currentUserData = snap.data();
+  enterApp();
+};
+
+// ─────────────────────────────────
+//  Email 登入
+// ─────────────────────────────────
+window.doEmailLogin = async () => {
+  const email = document.getElementById('login-email').value.trim();
+  const pass  = document.getElementById('login-password').value;
+  const btn   = document.getElementById('btn-login');
+  document.getElementById('login-error').style.display = 'none';
+  btn.disabled = true; btn.textContent = '登入中...';
+  try {
+    await signInWithEmailAndPassword(auth, email, pass);
+  } catch(e) {
+    showErr('login-error', e.code === 'auth/invalid-credential' ? '帳號或密碼錯誤' : e.message);
+    btn.disabled = false; btn.textContent = '登入 →';
+  }
+};
+
+// ─────────────────────────────────
+//  Email 註冊
+// ─────────────────────────────────
+window.doEmailRegister = async () => {
+  const name   = document.getElementById('reg-name').value.trim();
+  const age    = document.getElementById('reg-age').value.trim();
+  const gender = document.getElementById('reg-gender').value;
+  const email  = document.getElementById('reg-email').value.trim();
+  const pass   = document.getElementById('reg-password').value;
+  const skills = [...document.querySelectorAll('#skill-tags .skill-tag.selected')].map(t=>t.dataset.skill);
+  document.getElementById('register-error').style.display = 'none';
+
+  if (!name)          return showErr('register-error', '請填寫姓名');
+  if (!age)           return showErr('register-error', '請填寫年齡');
+  if (!gender)        return showErr('register-error', '請選擇性別');
+  if (!email)         return showErr('register-error', '請填寫電子郵件');
+  if (pass.length<6)  return showErr('register-error', '密碼至少 6 位');
+
+  const btn = document.getElementById('btn-register');
+  btn.disabled = true; btn.textContent = '註冊中...';
+  try {
+    const cred = await createUserWithEmailAndPassword(auth, email, pass);
+    const emojis = ['👨','👩','🧑','👷','👩‍💻','👩‍🍳'];
+    await setDoc(doc(db,'users', cred.user.uid), {
+      name, age: parseInt(age), gender, email, skills,
+      emoji: emojis[Math.floor(Math.random()*emojis.length)],
+      createdAt: serverTimestamp()
+    });
+  } catch(e) {
+    let msg = e.message;
+    if (e.code==='auth/email-already-in-use') msg = '此 Email 已被註冊，請直接登入';
+    if (e.code==='auth/invalid-email')        msg = 'Email 格式錯誤';
+    showErr('register-error', msg);
+    btn.disabled = false; btn.textContent = '完成註冊 →';
+  }
+};
+
+function showErr(id, msg) {
+  const el = document.getElementById(id);
+  if (el) { el.textContent = msg; el.style.display = 'block'; }
+}
+
+// ─────────────────────────────────
+//  進入 App / 登出
+// ─────────────────────────────────
 function enterApp() {
   document.getElementById('main-nav').style.display = 'flex';
   document.getElementById('navbar-user').innerHTML =
     `<span class="user-chip">👤 ${currentUserData.name}</span>
-     <button class="btn-logout" onclick="window.doLogout()">登出</button>`;
-  updateSidebar();
+     <button class="btn-logout" onclick="window.doLogout()" style="background:rgba(255,255,255,.15);border:none;color:#fff;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;margin-left:4px">登出</button>`;
+  updateSidebarUser();
   switchMainPage('home');
   loadCards();
 }
@@ -548,86 +1004,34 @@ function showAuthPage() {
   document.getElementById('main-nav').style.display = 'none';
   document.getElementById('navbar-user').innerHTML = `<span style="font-size:13px;opacity:.85">請先登入</span>`;
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById('page-auth').classList.add('active');
+  document.getElementById('page-register').classList.add('active');
 }
 
-// ── Auth Tab ──
-window.switchAuthTab = (tab) => {
-  document.querySelectorAll('.auth-tab').forEach((t,i) => t.classList.toggle('active', (i===0&&tab==='login')||(i===1&&tab==='register')));
-  document.querySelectorAll('.auth-panel').forEach(p => p.classList.remove('active'));
-  document.getElementById('panel-' + tab).classList.add('active');
-};
-
-// ── 登入 ──
-window.doLogin = async () => {
-  const email = document.getElementById('login-email').value.trim();
-  const pass  = document.getElementById('login-password').value;
-  const errEl = document.getElementById('login-error');
-  errEl.style.display = 'none';
-  const btn = document.getElementById('btn-login');
-  btn.disabled = true; btn.textContent = '登入中...';
-  try {
-    await signInWithEmailAndPassword(auth, email, pass);
-  } catch(e) {
-    errEl.textContent = e.code === 'auth/invalid-credential' ? '帳號或密碼錯誤' : e.message;
-    errEl.style.display = 'block';
-    btn.disabled = false; btn.textContent = '登入 →';
-  }
-};
-
-// ── 註冊 ──
-window.doRegister = async () => {
-  const name   = document.getElementById('reg-name').value.trim();
-  const age    = document.getElementById('reg-age').value.trim();
-  const gender = document.getElementById('reg-gender').value;
-  const email  = document.getElementById('reg-email').value.trim();
-  const pass   = document.getElementById('reg-password').value;
-  const skills = [...document.querySelectorAll('#skill-tags .skill-tag.selected')].map(t => t.dataset.skill);
-  const errEl  = document.getElementById('register-error');
-  errEl.style.display = 'none';
-
-  if (!name)   return showErr(errEl, '請填寫姓名');
-  if (!age)    return showErr(errEl, '請填寫年齡');
-  if (!gender) return showErr(errEl, '請選擇性別');
-  if (!email)  return showErr(errEl, '請填寫電子郵件');
-  if (pass.length < 6) return showErr(errEl, '密碼至少 6 位');
-
-  const btn = document.getElementById('btn-register');
-  btn.disabled = true; btn.textContent = '註冊中...';
-  try {
-    const cred = await createUserWithEmailAndPassword(auth, email, pass);
-    await setDoc(doc(db, 'users', cred.user.uid), {
-      name, age: parseInt(age), gender, skills, email,
-      emoji: ['👨','👩','🧑','👷','👩‍💻','👩‍🍳'][Math.floor(Math.random()*6)],
-      createdAt: serverTimestamp()
-    });
-  } catch(e) {
-    let msg = e.message;
-    if (e.code === 'auth/email-already-in-use') msg = '此電子郵件已被註冊';
-    if (e.code === 'auth/invalid-email') msg = '電子郵件格式錯誤';
-    showErr(errEl, msg);
-    btn.disabled = false; btn.textContent = '完成註冊 →';
-  }
-};
-
-function showErr(el, msg) { el.textContent = msg; el.style.display = 'block'; }
-
-// ── 登出 ──
 window.doLogout = () => signOut(auth);
 
-// ── 頁面切換 ──
+// ─────────────────────────────────
+//  技能標籤互動（註冊頁）
+// ─────────────────────────────────
+document.querySelectorAll('.skill-tags').forEach(container => {
+  container.addEventListener('click', e => {
+    const tag = e.target.closest('.skill-tag');
+    if (tag) tag.classList.toggle('selected');
+  });
+});
+
+// ─────────────────────────────────
+//  頁面 / Tab 切換
+// ─────────────────────────────────
 window.switchMainPage = (name) => {
   const map = { home:'page-home', post:'page-post', profile:'page-profile' };
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById(map[name]).classList.add('active');
-  document.querySelectorAll('#main-nav .nav-btn').forEach((b,i) => {
-    b.classList.toggle('active', ['home','post','profile'][i] === name);
-  });
+  document.querySelectorAll('#main-nav .nav-btn').forEach((b,i) =>
+    b.classList.toggle('active', ['home','post','profile'][i] === name));
   if (name === 'profile') renderProfile();
-  updateSidebar();
+  updateSidebarUser();
 };
 
-// ── Tab 切換 ──
 window.switchTab = (type) => {
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   document.getElementById('tab-' + type).classList.add('active');
@@ -635,90 +1039,96 @@ window.switchTab = (type) => {
   document.getElementById('sb-offer').classList.toggle('active', type === 'offer');
 };
 
-// ── 更新 Sidebar ──
-function updateSidebar() {
+function updateSidebarUser() {
   if (!currentUserData) return;
   ['','2','3'].forEach(s => {
-    const n = document.getElementById('sb-name'+s);
-    const m = document.getElementById('sb-meta'+s);
+    const n = document.getElementById('sb-user-name'+s);
+    const m = document.getElementById('sb-user-meta'+s);
     if (n) n.textContent = currentUserData.name;
     if (m) m.textContent = `${currentUserData.age} 歲・${currentUserData.gender}`;
   });
-  const tagsEl = document.getElementById('sb-tags');
+  const tagsEl = document.getElementById('sb-user-tags');
   if (tagsEl) tagsEl.innerHTML = (currentUserData.skills||[]).length
     ? currentUserData.skills.map(s=>`<span class="tag" style="font-size:10px">${s}</span>`).join('')
     : '<span style="font-size:11px;color:#9ca3af">尚未設定技能</span>';
 }
 
-// ── 載入卡片（從 Firestore） ──
+// ─────────────────────────────────
+//  載入卡片（Firestore）
+// ─────────────────────────────────
 async function loadCards() {
-  // 需要幫助
-  try {
-    const q = query(collection(db, 'needs'), orderBy('createdAt', 'desc'));
-    const snap = await getDocs(q);
-    const cards = [];
-    snap.forEach(d => cards.push({ id: d.id, ...d.data() }));
-    renderNeedCards(cards);
-  } catch(e) { document.getElementById('need-cards').innerHTML = '<div class="empty-state"><span class="empty-icon">⚠️</span><p>載入失敗</p></div>'; }
+  document.getElementById('need-cards').innerHTML  = '<div style="text-align:center;padding:40px;color:#9ca3af">載入中...</div>';
+  document.getElementById('offer-cards').innerHTML = '<div style="text-align:center;padding:40px;color:#9ca3af">載入中...</div>';
 
-  // 提供幫助（從 users 讀取有技能的用戶）
+  // 求助需求
   try {
-    const snap = await getDocs(collection(db, 'users'));
-    const users = [];
-    snap.forEach(d => { if (d.id !== currentUser?.uid) users.push({ id: d.id, ...d.data() }); });
+    const q = query(collection(db,'needs'), orderBy('createdAt','desc'));
+    const snap = await getDocs(q);
+    const cards = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderNeedCards(cards);
+  } catch(e) {
+    document.getElementById('need-cards').innerHTML = '<div style="text-align:center;padding:40px;color:#9ca3af">⚠️ 載入失敗</div>';
+  }
+
+  // 其他用戶（提供幫助）
+  try {
+    const snap = await getDocs(collection(db,'users'));
+    const users = snap.docs.filter(d => d.id !== currentUser?.uid).map(d => ({ id: d.id, ...d.data() }));
     renderOfferCards(users);
-  } catch(e) { document.getElementById('offer-cards').innerHTML = '<div class="empty-state"><span class="empty-icon">⚠️</span><p>載入失敗</p></div>'; }
+  } catch(e) {
+    document.getElementById('offer-cards').innerHTML = '<div style="text-align:center;padding:40px;color:#9ca3af">⚠️ 載入失敗</div>';
+  }
 }
 
-// ── 渲染卡片 ──
+function tagsHTML(skills) {
+  return (skills||[]).map(s => `<span class="tag">${s}</span>`).join('');
+}
+
 function renderNeedCards(cards) {
   const el = document.getElementById('need-cards');
-  if (!cards.length) {
-    el.innerHTML = '<div class="empty-state"><span class="empty-icon">🙋</span><p>目前沒有求助需求，成為第一個發布的人！</p></div>';
-    return;
-  }
+  if (!cards.length) { el.innerHTML = '<div style="text-align:center;padding:60px;color:#9ca3af"><div style="font-size:48px;margin-bottom:12px">🙋</div><p>目前沒有求助需求</p></div>'; return; }
   el.innerHTML = cards.map(d => {
     const isMe = d.uid === currentUser?.uid;
+    const data = JSON.stringify(d).replace(/"/g,'&quot;');
     return `<div class="card">
-      <div class="card-header">
-        <div class="avatar">${d.emoji||'🙋'}</div>
+      <div class="card-header"><div class="avatar">${d.emoji||'🙋'}</div>
         <div><div class="card-name">${d.name}</div><div class="card-meta">${d.age} 歲・${d.gender}</div></div>
       </div>
-      <div class="tags">${(d.skills||[]).map(s=>`<span class="tag">${s}</span>`).join('')}</div>
-      <div class="card-desc">${d.desc}${d.time ? `<br><small style="color:#9ca3af">⏰ ${d.time}</small>` : ''}</div>
-      <button class="btn-card ${isMe?'mine':''}" ${isMe?'':'onclick="window.openModal(\'need\','+JSON.stringify(d).replace(/"/g,'&quot;')+')"'}>
-        ${isMe ? '📌 這是你的需求' : '我來幫忙 🙋'}
-      </button>
-    </div>`;
+      <div class="tags">${tagsHTML(d.skills)}</div>
+      <div class="card-desc">${d.desc}${d.time?`<br><small style="color:#9ca3af">⏰ ${d.time}</small>`:''}
+      </div>
+      <button class="btn-card ${isMe?'mine':''}" ${isMe?'disabled':'onclick="window.openModal(\'need\',\''+data+'\')"'}>
+        ${isMe?'📌 這是你的需求':'我來幫忙 🙋'}
+      </button></div>`;
   }).join('');
 }
 
 function renderOfferCards(users) {
   const el = document.getElementById('offer-cards');
-  if (!users.length) {
-    el.innerHTML = '<div class="empty-state"><span class="empty-icon">💪</span><p>目前還沒有其他用戶，邀請朋友加入！</p></div>';
-    return;
-  }
-  el.innerHTML = users.map(d => `
-    <div class="card">
-      <div class="card-header">
-        <div class="avatar">${d.emoji||'🙂'}</div>
+  if (!users.length) { el.innerHTML = '<div style="text-align:center;padding:60px;color:#9ca3af"><div style="font-size:48px;margin-bottom:12px">💪</div><p>邀請朋友加入平台！</p></div>'; return; }
+  el.innerHTML = users.map(d => {
+    const data = JSON.stringify(d).replace(/"/g,'&quot;');
+    return `<div class="card">
+      <div class="card-header"><div class="avatar">${d.emoji||'🙂'}</div>
         <div><div class="card-name">${d.name}</div><div class="card-meta">${d.age} 歲・${d.gender}</div></div>
       </div>
-      <div class="tags">${(d.skills||[]).map(s=>`<span class="tag">${s}</span>`).join('')}</div>
-      <div class="card-desc">具備：${(d.skills||[]).join('、') || '尚未設定技能'}</div>
-      <button class="btn-card" onclick="window.openModal('offer',${JSON.stringify(d).replace(/"/g,'&quot;')})">尋求幫助 💬</button>
-    </div>`).join('');
+      <div class="tags">${tagsHTML(d.skills)}</div>
+      <div class="card-desc">具備：${(d.skills||[]).join('、')||'尚未設定技能'}</div>
+      <button class="btn-card" onclick="window.openModal('offer','${data}')">尋求幫助 💬</button>
+    </div>`;
+  }).join('');
 }
 
-// ── Modal ──
-window.openModal = (type, data) => {
-  if (typeof data === 'string') data = JSON.parse(data.replace(/&quot;/g,'"'));
-  activeModalData = { type, data };
-  document.getElementById('modal-title').textContent = type === 'need' ? `協助 ${data.name}` : `聯絡 ${data.name}`;
-  document.getElementById('modal-sub').textContent = `${data.age} 歲・${data.gender}・${(data.skills||[]).join('、')}`;
-  document.getElementById('modal-detail').textContent = data.desc || `具備技能：${(data.skills||[]).join('、')}`;
-  document.getElementById('modal-msg').value = '';
+// ─────────────────────────────────
+//  Modal
+// ─────────────────────────────────
+window.openModal = (type, dataStr) => {
+  const d = typeof dataStr === 'string' ? JSON.parse(dataStr.replace(/&quot;/g,'"')) : dataStr;
+  activeModalData = { type, d };
+  document.getElementById('modal-title').textContent = type==='need' ? `協助 ${d.name}` : `聯絡 ${d.name}`;
+  document.getElementById('modal-sub').textContent   = `${d.age} 歲・${d.gender}・${(d.skills||[]).join('、')}`;
+  document.getElementById('modal-detail-text').textContent = d.desc || `具備技能：${(d.skills||[]).join('、')}`;
+  document.getElementById('modal-msg').value  = '';
   document.getElementById('modal-time').value = '';
   document.getElementById('modal-overlay').classList.add('open');
 };
@@ -733,13 +1143,12 @@ window.sendInvite = async () => {
   const time = document.getElementById('modal-time').value.trim();
   if (!msg)  return showToast('請填寫說明');
   if (!time) return showToast('請填寫希望時間');
-
   try {
-    await addDoc(collection(db, 'invites'), {
+    await addDoc(collection(db,'invites'), {
       fromUid:  currentUser.uid,
       fromName: currentUserData.name,
-      toUid:    activeModalData.data.uid || activeModalData.data.id,
-      toName:   activeModalData.data.name,
+      toName:   activeModalData.d.name,
+      toUid:    activeModalData.d.uid || activeModalData.d.id,
       type:     activeModalData.type,
       msg, time, status: '等待審核',
       createdAt: serverTimestamp()
@@ -751,38 +1160,38 @@ window.sendInvite = async () => {
   }
 };
 
-// ── 發布需求 ──
+// ─────────────────────────────────
+//  發布需求
+// ─────────────────────────────────
 window.postNeed = async () => {
-  const skills = [...document.querySelectorAll('#post-skill-tags .skill-tag.selected')].map(t => t.dataset.skill);
+  const skills = [...document.querySelectorAll('#post-skill-tags .skill-tag.selected')].map(t=>t.dataset.skill);
   const desc = document.getElementById('post-desc').value.trim();
   const time = document.getElementById('post-time').value.trim();
   if (!skills.length) return showToast('請選擇至少一個技能標籤');
   if (!desc)  return showToast('請填寫需求描述');
   if (!time)  return showToast('請填寫希望時間');
-
   try {
-    await addDoc(collection(db, 'needs'), {
-      uid:    currentUser.uid,
-      name:   currentUserData.name,
-      age:    currentUserData.age,
-      gender: currentUserData.gender,
-      emoji:  currentUserData.emoji || '🙋',
-      skills, desc, time,
-      createdAt: serverTimestamp()
+    await addDoc(collection(db,'needs'), {
+      uid: currentUser.uid, name: currentUserData.name,
+      age: currentUserData.age, gender: currentUserData.gender,
+      emoji: currentUserData.emoji||'🙋',
+      skills, desc, time, createdAt: serverTimestamp()
     });
     document.getElementById('post-desc').value = '';
     document.getElementById('post-time').value = '';
-    document.querySelectorAll('#post-skill-tags .skill-tag').forEach(t => t.classList.remove('selected'));
+    document.querySelectorAll('#post-skill-tags .skill-tag').forEach(t=>t.classList.remove('selected'));
     showToast('需求已發布！');
-    switchMainPage('home');
-    switchTab('need');
+    window.switchMainPage('home');
+    window.switchTab('need');
     loadCards();
   } catch(e) {
     showToast('發布失敗，請稍後再試');
   }
 };
 
-// ── 我的頁面 ──
+// ─────────────────────────────────
+//  我的
+// ─────────────────────────────────
 async function renderProfile() {
   if (!currentUserData) return;
   document.getElementById('profile-name').textContent = currentUserData.name;
@@ -791,14 +1200,15 @@ async function renderProfile() {
     ? currentUserData.skills.map(s=>`<span class="tag">${s}</span>`).join('')
     : '<span style="font-size:13px;color:#9ca3af">尚未設定技能</span>';
 
+  const hl = document.getElementById('history-list');
+  hl.innerHTML = '<div style="text-align:center;padding:20px;color:#9ca3af">載入中...</div>';
   try {
     const q = query(collection(db,'invites'), where('fromUid','==',currentUser.uid), orderBy('createdAt','desc'));
     const snap = await getDocs(q);
-    const hl = document.getElementById('history-list');
     if (snap.empty) {
-      hl.innerHTML = '<div class="empty-state"><span class="empty-icon">📭</span><p>尚無互助紀錄</p></div>';
+      hl.innerHTML = '<div style="text-align:center;padding:40px;color:#9ca3af"><div style="font-size:36px;margin-bottom:8px">📭</div><p>尚無互助紀錄</p></div>';
     } else {
-      hl.innerHTML = [...snap.docs].map(d => {
+      hl.innerHTML = snap.docs.map(d => {
         const h = d.data();
         return `<div class="history-item">
           <div class="h-name">${h.toName}</div>
@@ -808,27 +1218,24 @@ async function renderProfile() {
         </div>`;
       }).join('');
     }
-  } catch(e) {}
+  } catch(e) {
+    hl.innerHTML = '<div style="text-align:center;padding:20px;color:#9ca3af">載入失敗</div>';
+  }
 }
 
-// ── Toast ──
-window.showToast = (msg) => {
+// ─────────────────────────────────
+//  Toast
+// ─────────────────────────────────
+function showToast(msg) {
   const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
+  t.textContent = msg;
+  t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 3000);
-};
+}
 
-function showToast(msg) { window.showToast(msg); }
-
-// ── 技能標籤 ──
-document.querySelectorAll('.skill-tags').forEach(c => {
-  c.addEventListener('click', e => {
-    const tag = e.target.closest('.skill-tag');
-    if (tag) tag.classList.toggle('selected');
-  });
-});
-
-// ── Modal 背景點擊關閉 ──
+// ─────────────────────────────────
+//  點擊 overlay 背景關閉 Modal
+// ─────────────────────────────────
 document.getElementById('modal-overlay').addEventListener('click', e => {
   if (e.target === document.getElementById('modal-overlay')) window.closeModal();
 });
