@@ -938,7 +938,6 @@ let currentUser     = null;
 let currentUserData = null;
 let activeModalData = null;
 let history         = [];
-let _enteringApp    = false;  // 防止 onAuthStateChanged 與按鈕 callback 重複進入
 
 // ─────────────────────────────────
 //  判斷是否為 localhost（Mock 模式）
@@ -980,18 +979,16 @@ const IS_LOCAL = location.hostname === 'localhost' || location.hostname === '127
 })();
 
 // ─────────────────────────────────
-//  Auth 狀態監聽
+//  Auth 狀態監聽（唯一進入點，重新整理後自動恢復登入）
 // ─────────────────────────────────
 onAuthStateChanged(auth, async user => {
   if (window.__MOCK_LOGGED_IN__) return;
-  if (_enteringApp) return;  // 已由按鈕 callback 直接進入，跳過
   if (user) {
     currentUser = user;
     try {
       const snap = await getDoc(doc(db, 'users', user.uid));
       if (snap.exists()) {
         currentUserData = snap.data();
-        enterApp();
       } else {
         currentUserData = {
           name:   user.displayName || user.email.split('@')[0],
@@ -1001,10 +998,8 @@ onAuthStateChanged(auth, async user => {
           age:    '',
           gender: ''
         };
-        showSkillSetup();
       }
     } catch(e) {
-      // Firestore 讀取失敗（例如 file:// 環境）：用基本資料進入
       currentUserData = {
         name:   user.displayName || user.email.split('@')[0],
         email:  user.email,
@@ -1013,6 +1008,13 @@ onAuthStateChanged(auth, async user => {
         age:    '',
         gender: ''
       };
+    }
+    // 不管 Firestore 成不成功，只要 Firebase Auth 有 user 就進入 App
+    if (currentUserData.age === '' && currentUserData.skills.length === 0
+        && !user.displayName) {
+      // 全新 Google 用戶，補填資料
+      showSkillSetup();
+    } else {
       enterApp();
     }
   } else {
@@ -1164,22 +1166,11 @@ window.doEmailLogin = async () => {
   document.getElementById('login-error').style.display = 'none';
   btn.disabled = true; btn.textContent = '登入中...';
   try {
-    const cred = await signInWithEmailAndPassword(auth, email, pass);
-    _enteringApp = true;
-    currentUser  = cred.user;
-    // 嘗試讀取 Firestore 用戶資料
-    try {
-      const snap = await getDoc(doc(db, 'users', cred.user.uid));
-      currentUserData = snap.exists()
-        ? snap.data()
-        : { name: cred.user.email.split('@')[0], email: cred.user.email, emoji:'🙂', skills:[], age:'', gender:'' };
-    } catch(e) {
-      currentUserData = { name: cred.user.email.split('@')[0], email: cred.user.email, emoji:'🙂', skills:[], age:'', gender:'' };
-    }
-    btn.disabled = false; btn.textContent = '登入 →';
-    enterApp();
+    await signInWithEmailAndPassword(auth, email, pass);
+    // 成功後由 onAuthStateChanged 接手，自動進入 App
   } catch(e) {
     showErr('login-error', e.code === 'auth/invalid-credential' ? '帳號或密碼錯誤' : e.message);
+  } finally {
     btn.disabled = false; btn.textContent = '登入 →';
   }
 };
@@ -1207,22 +1198,18 @@ window.doEmailRegister = async () => {
   try {
     const cred = await createUserWithEmailAndPassword(auth, email, pass);
     const emojis = ['👨','👩','🧑','👷','👩‍💻','👩‍🍳'];
-    const userData = {
+    await setDoc(doc(db,'users', cred.user.uid), {
       name, age: parseInt(age), gender, email, skills,
       emoji: emojis[Math.floor(Math.random()*emojis.length)],
       createdAt: serverTimestamp()
-    };
-    await setDoc(doc(db,'users', cred.user.uid), userData);
-    _enteringApp    = true;
-    currentUser     = cred.user;
-    currentUserData = { ...userData, age: parseInt(age) };
-    btn.disabled = false; btn.textContent = '完成註冊 →';
-    enterApp();
+    });
+    // 成功後由 onAuthStateChanged 接手，自動進入 App
   } catch(e) {
     let msg = e.message;
     if (e.code==='auth/email-already-in-use') msg = '此 Email 已被註冊，請直接登入';
     if (e.code==='auth/invalid-email')        msg = 'Email 格式錯誤';
     showErr('register-error', msg);
+  } finally {
     btn.disabled = false; btn.textContent = '完成註冊 →';
   }
 };
