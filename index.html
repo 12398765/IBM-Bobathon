@@ -1565,25 +1565,31 @@ window.sendInvite = async () => {
   if (!time) return showToast('請填寫希望時間');
 
   const inviteId = 's' + Date.now();
-  const toName   = activeModalData.d.name;
+  const d        = activeModalData.d;
+  const toName   = d.name;
+  // need 卡片用 d.uid；offer 卡片（users collection）用 d.id
+  const toUid    = d.uid && d.uid !== 'demo' ? d.uid : d.id;
 
   // 寫入 Firestore
   try {
     await addDoc(collection(db,'invites'), {
-      fromUid:  currentUser.uid,
-      fromName: currentUserData.name,
+      fromUid:   currentUser.uid,
+      fromName:  currentUserData.name,
+      fromEmoji: currentUserData.emoji || '🙂',
+      fromMeta:  `${currentUserData.age} 歲・${currentUserData.gender}`,
+      contact:   currentUserData.email || '',
       toName,
-      toUid:    activeModalData.d.uid || activeModalData.d.id,
-      type:     activeModalData.type,
+      toUid,
+      type:      activeModalData.type,
       msg, time, status: '等待回覆',
       createdAt: serverTimestamp()
     });
-  } catch(e) { /* Firestore 失敗仍可本地繼續 */ }
-
-  // 本地快取
-  sentInvites.push({ id: inviteId, toName, time, msg, status: '等待回覆' });
-  window.closeModal();
-  showToast('邀請已送出！等待對方選擇接受或拒絕。');
+    sentInvites.push({ id: inviteId, toName, time, msg, status: '等待回覆' });
+    window.closeModal();
+    showToast('邀請已送出！等待對方選擇接受或拒絕。');
+  } catch(e) {
+    showToast('送出失敗，請稍後再試');
+  }
 };
 
 // ─────────────────────────────────
