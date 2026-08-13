@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>社區微互助平台</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #f3f4f6;
+    font-family: -apple-system, "Segoe UI", system-ui, "Helvetica Neue", sans-serif;
+    min-height: 100vh;
+    color: #1f2328;
+  }
+
+  .navbar {
+    background: #F97316;
+    color: #fff;
+    padding: 0 40px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    box-shadow: 0 2px 12px rgba(249,115,22,.3);
+  }
+  .navbar-brand { font-size: 20px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+  .navbar-nav { display: flex; gap: 6px; }
+  .nav-btn {
+    background: rgba(255,255,255,.15); border: none; color: #fff;
+    padding: 7px 18px; border-radius: 20px; font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: background .2s;
+  }
+  .nav-btn:hover, .nav-btn.active { background: rgba(255,255,255,.3); }
+  .navbar-user { font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+  .user-chip { background: rgba(255,255,255,.2); padding: 5px 14px; border-radius: 20px; font-size: 13px; }
+
+  .page { display: none; }
+  .page.active { display: block; }
+
+  .register-layout {
+    min-height: calc(100vh - 60px); display: flex;
+    align-items: center; justify-content: center; padding: 48px 24px;
+  }
+  .register-card {
+    background: #fff; border-radius: 20px; border: 1.5px solid #e5e7eb;
+    padding: 48px; width: 100%; max-width: 540px; box-shadow: 0 4px 24px rgba(0,0,0,.07);
+  }
+  .register-logo { text-align: center; margin-bottom: 36px; }
+  .register-logo .icon { font-size: 56px; display: block; margin-bottom: 12px; }
+  .register-logo h1 { font-size: 26px; font-weight: 800; color: #F97316; }
+  .register-logo p { font-size: 14px; color: #6b7280; margin-top: 6px; }
+
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .form-group { margin-bottom: 20px; }
+  .form-group label { display: block; font-size: 13px; font-weight: 700; color: #374151; margin-bottom: 7px; }
+  .form-group input, .form-group select {
+    width: 100%; padding: 11px 14px; border: 1.5px solid #e5e7eb; border-radius: 10px;
+    font-size: 14px; color: #1f2328; outline: none; transition: border-color .2s;
+  }
+  .form-group input:focus, .form-group select:focus { border-color: #F97316; }
+
+  .skill-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+  .skill-tag {
+    padding: 7px 14px; border-radius: 20px; border: 1.5px solid #e5e7eb;
+    font-size: 13px; cursor: pointer; user-select: none; color: #6b7280; transition: all .15s;
+  }
+  .skill-tag.selected { background: #F97316; border-color: #F97316; color: #fff; }
+
+  .btn-primary {
+    width: 100%; padding: 14px; background: #F97316; color: #fff;
+    border: none; border-radius: 12px; font-size: 16px; font-weight: 700;
+    cursor: pointer; margin-top: 10px; transition: background .2s;
+  }
+  .btn-primary:hover { background: #ea6c0a; }
+
+  .home-layout {
+    display: grid; grid-template-columns: 260px 1fr;
+    gap: 0; min-height: calc(100vh - 60px);
+  }
+
+  .sidebar {
+    background: #fff; border-right: 1.5px solid #e5e7eb;
+    padding: 28px 20px; display: flex; flex-direction: column; gap: 6px;
+  }
+  .sidebar-title {
+    font-size: 11px; font-weight: 700; color: #9ca3af;
+    text-transform: uppercase; letter-spacing: .08em; margin-bottom: 6px; padding: 0 8px;
+  }
+  .sidebar-btn {
+    display: flex; align-items: center; gap: 10px; padding: 11px 14px; border-radius: 10px;
+    border: none; background: none; font-size: 14px; font-weight: 600; color: #4b5563;
+    cursor: pointer; transition: all .15s; text-align: left;
+  }
+  .sidebar-btn:hover { background: #fff7ed; color: #F97316; }
+  .sidebar-btn.active { background: #fff7ed; color: #F97316; }
+  .sidebar-icon { font-size: 18px; width: 24px; text-align: center; }
+  .sidebar-divider { height: 1px; background: #e5e7eb; margin: 10px 0; }
+  .sidebar-user { margin-top: auto; background: #fff7ed; border-radius: 12px; padding: 14px; }
+  .sidebar-user .name { font-size: 15px; font-weight: 800; color: #1f2328; }
+  .sidebar-user .meta { font-size: 12px; color: #9ca3af; margin-top: 2px; }
+  .sidebar-user .tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
+
+  .main-content { padding: 32px 36px; overflow-y: auto; }
+  .content-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+  .content-header h2 { font-size: 22px; font-weight: 800; color: #1f2328; }
+  .content-header p  { font-size: 14px; color: #6b7280; margin-top: 3px; }
+
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 18px; }
+  .card {
+    background: #fff; border-radius: 16px; border: 1.5px solid #e5e7eb; padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.04); transition: box-shadow .2s, transform .2s;
+    display: flex; flex-direction: column;
+  }
+  .card:hover { box-shadow: 0 6px 24px rgba(249,115,22,.12); transform: translateY(-2px); }
+  .card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .avatar {
+    width: 48px; height: 48px; border-radius: 50%; background: #fff7ed;
+    display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0;
+  }
+  .card-name { font-size: 16px; font-weight: 700; color: #1f2328; }
+  .card-meta { font-size: 12px; color: #9ca3af; margin-top: 2px; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+  .tag { padding: 4px 11px; border-radius: 20px; font-size: 11px; font-weight: 600; background: #fff7ed; color: #F97316; border: 1px solid #fed7aa; }
+  .card-desc { font-size: 13px; color: #4b5563; line-height: 1.6; margin-bottom: 16px; flex: 1; }
+  .btn-card {
+    width: 100%; padding: 11px; background: #F97316; color: #fff;
+    border: none; border-radius: 10px; font-size: 13px; font-weight: 700; cursor: pointer; transition: background .2s;
+  }
+  .btn-card:hover { background: #ea6c0a; }
+  .btn-card.pending { background: #e5e7eb; color: #9ca3af; cursor: default; }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  .post-layout { max-width: 640px; }
+  .post-layout .form-group textarea {
+    width: 100%; padding: 11px 14px; border: 1.5px solid #e5e7eb; border-radius: 10px;
+    font-size: 14px; color: #1f2328; outline: none; resize: vertical; min-height: 100px;
+  }
+  .post-layout .form-group textarea:focus { border-color: #F97316; }
+  .post-layout .form-group input {
+    width: 100%; padding: 11px 14px; border: 1.5px solid #e5e7eb; border-radius: 10px;
+    font-size: 14px; color: #1f2328; outline: none;
+  }
+  .post-layout .form-group input:focus { border-color: #F97316; }
+
+  .profile-layout { display: grid; grid-template-columns: 300px 1fr; gap: 24px; max-width: 900px; }
+  .profile-card { background: #fff; border-radius: 16px; border: 1.5px solid #e5e7eb; padding: 28px; text-align: center; }
+  .profile-avatar { font-size: 64px; margin-bottom: 14px; display: block; }
+  .profile-name { font-size: 22px; font-weight: 800; color: #1f2328; }
+  .profile-meta { font-size: 14px; color: #9ca3af; margin-top: 4px; }
+  .profile-tags { justify-content: center; margin-top: 16px; }
+  .history-card { background: #fff; border-radius: 16px; border: 1.5px solid #e5e7eb; padding: 24px; }
+  .history-card h3 { font-size: 16px; font-weight: 800; margin-bottom: 16px; }
+  .history-item { padding: 14px 0; border-bottom: 1px solid #f3f4f6; }
+  .history-item:last-child { border-bottom: none; }
+  .history-item .h-name { font-weight: 700; font-size: 15px; }
+  .history-item .h-time { font-size: 12px; color: #9ca3af; margin-top: 2px; }
+  .history-item .h-msg  { font-size: 13px; color: #4b5563; margin-top: 6px; }
+  .status-badge {
+    display: inline-block; background: #fff7ed; color: #F97316;
+    padding: 3px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; margin-top: 8px;
+  }
+  .status-badge.accepted { background: #dcfce7; color: #16a34a; }
+  .status-badge.rejected { background: #fee2e2; color: #dc2626; }
+
+  /* 邀請 Tab */
+  .invite-tabs { display: flex; gap: 0; margin-bottom: 20px; border-bottom: 2px solid #f3f4f6; }
+  .invite-tab {
+    padding: 10px 18px; background: none; border: none; border-bottom: 2px solid transparent;
+    font-size: 14px; font-weight: 700; color: #6b7280; cursor: pointer; margin-bottom: -2px;
+  }
+  .invite-tab.active { color: #F97316; border-bottom-color: #F97316; }
+  .invite-panel { display: none; }
+  .invite-panel.active { display: block; }
+
+  /* 接受 / 拒絕按鈕 */
+  .btn-accept {
+    margin-top: 10px; margin-right: 8px; padding: 8px 20px;
+    background: #16a34a; color: #fff; border: none; border-radius: 8px;
+    font-size: 13px; font-weight: 700; cursor: pointer; transition: background .2s;
+  }
+  .btn-accept:hover { background: #15803d; }
+  .btn-reject {
+    margin-top: 10px; padding: 8px 20px;
+    background: #f3f4f6; color: #dc2626; border: 1.5px solid #fca5a5; border-radius: 8px;
+    font-size: 13px; font-weight: 700; cursor: pointer; transition: background .2s;
+  }
+  .btn-reject:hover { background: #fee2e2; }
+
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,.45);
+    display: none; align-items: center; justify-content: center; z-index: 200; padding: 24px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: #fff; width: 100%; max-width: 520px; border-radius: 20px; padding: 36px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.18); animation: fadeIn .2s ease;
+  }
+  @keyframes fadeIn { from { transform: scale(.96); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .modal h3 { font-size: 20px; font-weight: 800; color: #1f2328; margin-bottom: 4px; }
+  .modal .modal-sub { font-size: 13px; color: #9ca3af; margin-bottom: 20px; }
+  .modal-detail { background: #f9fafb; border-radius: 12px; padding: 14px 16px; margin-bottom: 20px; font-size: 14px; color: #4b5563; line-height: 1.6; }
+  .modal label { display: block; font-size: 13px; font-weight: 700; color: #374151; margin-bottom: 7px; }
+  .modal textarea { width: 100%; padding: 11px 14px; border: 1.5px solid #e5e7eb; border-radius: 10px; font-size: 14px; color: #1f2328; resize: none; outline: none; height: 90px; margin-bottom: 16px; }
+  .modal textarea:focus { border-color: #F97316; }
+  .modal input[type="text"] { width: 100%; padding: 11px 14px; border: 1.5px solid #e5e7eb; border-radius: 10px; font-size: 14px; color: #1f2328; outline: none; margin-bottom: 24px; }
+  .modal input[type="text"]:focus { border-color: #F97316; }
+  .btn-row { display: flex; gap: 12px; }
+  .btn-cancel { flex: 1; padding: 12px; background: #f3f4f6; color: #6b7280; border: none; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; }
+  .btn-send { flex: 2; padding: 12px; background: #F97316; color: #fff; border: none; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; }
+  .btn-send:hover { background: #ea6c0a; }
+
+  .toast {
+    position: fixed; bottom: 32px; left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: #1f2328; color: #fff; padding: 12px 24px; border-radius: 24px;
+    font-size: 14px; white-space: nowrap; opacity: 0; transition: all .3s; z-index: 300;
+    pointer-events: none; box-shadow: 0 4px 20px rgba(0,0,0,.2);
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .empty-state { text-align: center; padding: 60px 20px; color: #9ca3af; }
+  .empty-state .empty-icon { font-size: 48px; margin-bottom: 12px; display: block; }
+  .empty-state p { font-size: 15px; }
+
+  /* ── 配對成功 Modal ── */
+  .match-header { text-align: center; margin-bottom: 24px; }
+  .match-icon { font-size: 52px; display: block; margin-bottom: 10px; }
+  .match-title { font-size: 22px; font-weight: 800; color: #16a34a; }
+  .match-sub { font-size: 13px; color: #6b7280; margin-top: 4px; }
+  .match-info {
+    background: #f0fdf4; border: 1.5px solid #bbf7d0; border-radius: 14px;
+    padding: 18px 20px; margin-bottom: 20px;
+  }
+  .match-info-row { display: flex; align-items: center; gap: 10px; padding: 6px 0; font-size: 14px; }
+  .match-info-row .label { color: #6b7280; font-weight: 600; min-width: 60px; }
+  .match-info-row .value { color: #1f2328; font-weight: 700; }
+  .contact-box {
+    background: #fff7ed; border: 1.5px solid #fed7aa; border-radius: 12px;
+    padding: 14px 18px; margin-bottom: 24px; display: flex; align-items: center; gap: 12px;
+  }
+  .contact-box .contact-icon { font-size: 28px; }
+  .contact-box .contact-label { font-size: 12px; color: #9ca3af; }
+  .contact-box .contact-value { font-size: 16px; font-weight: 800; color: #F97316; letter-spacing: .04em; }
+  .btn-chat {
+    width: 100%; padding: 13px; background: #F97316; color: #fff;
+    border: none; border-radius: 12px; font-size: 15px; font-weight: 700;
+    cursor: pointer; transition: background .2s;
+  }
+  .btn-chat:hover { background: #ea6c0a; }
+
+  /* ── 聊天 Modal ── */
+  .chat-header {
+    display: flex; align-items: center; gap: 12px;
+    padding-bottom: 16px; margin-bottom: 0;
+    border-bottom: 1.5px solid #f3f4f6;
+  }
+  .chat-avatar {
+    width: 40px; height: 40px; border-radius: 50%; background: #fff7ed;
+    display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0;
+  }
+  .chat-peer-name { font-size: 16px; font-weight: 800; }
+  .chat-peer-meta { font-size: 12px; color: #9ca3af; margin-top: 1px; }
+  .chat-messages {
+    height: 260px; overflow-y: auto; padding: 16px 0;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .bubble-wrap { display: flex; align-items: flex-end; gap: 8px; }
+  .bubble-wrap.me { flex-direction: row-reverse; }
+  .bubble {
+    max-width: 72%; padding: 10px 14px; border-radius: 18px;
+    font-size: 14px; line-height: 1.5;
+  }
+  .bubble-wrap.me .bubble { background: #F97316; color: #fff; border-bottom-right-radius: 4px; }
+  .bubble-wrap:not(.me) .bubble { background: #f3f4f6; color: #1f2328; border-bottom-left-radius: 4px; }
+  .bubble-avatar {
+    width: 30px; height: 30px; border-radius: 50%; background: #fff7ed;
+    display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0;
+  }
+  .bubble-time { font-size: 11px; color: #9ca3af; margin-bottom: 4px; }
+  .typing-indicator { display: flex; gap: 4px; padding: 10px 14px; background: #f3f4f6; border-radius: 18px; border-bottom-left-radius: 4px; width: fit-content; }
+  .typing-dot { width: 7px; height: 7px; border-radius: 50%; background: #9ca3af; animation: typingBounce .8s infinite; }
+  .typing-dot:nth-child(2) { animation-delay: .15s; }
+  .typing-dot:nth-child(3) { animation-delay: .3s; }
+  @keyframes typingBounce { 0%,60%,100% { transform: translateY(0); } 30% { transform: translateY(-6px); } }
+  .chat-input-row { display: flex; gap: 10px; padding-top: 14px; border-top: 1.5px solid #f3f4f6; margin-top: 4px; }
+  .chat-input {
+    flex: 1; padding: 11px 14px; border: 1.5px solid #e5e7eb; border-radius: 24px;
+    font-size: 14px; outline: none; transition: border-color .2s;
+  }
+  .chat-input:focus { border-color: #F97316; }
+  .btn-chat-send {
+    padding: 11px 18px; background: #F97316; color: #fff;
+    border: none; border-radius: 24px; font-size: 14px; font-weight: 700; cursor: pointer; transition: background .2s;
+  }
+  .btn-chat-send:hover { background: #ea6c0a; }
+</style>
+</head>
+<body>
+<!-- Navbar -->
+<nav class="navbar">
+  <div class="navbar-brand">🤝 社區微互助平台</div>
+  <div class="navbar-nav" id="main-nav" style="display:none">
+    <button class="nav-btn active" onclick="switchMainPage('home')">🏠 首頁</button>
+    <button class="nav-btn"       onclick="switchMainPage('post')">➕ 發布需求</button>
+    <button class="nav-btn"       onclick="switchMainPage('profile')">👤 我的</button>
+  </div>
+  <div class="navbar-user" id="navbar-user">
+    <span style="font-size:13px;opacity:.85">請先完成註冊</span>
+  </div>
+</nav>
+
+<!-- 頁面 1：註冊 -->
+<div class="page active" id="page-register">
+  <div class="register-layout">
+    <div class="register-card">
+      <div class="register-logo">
+        <span class="icon">🤝</span>
+        <h1>社區微互助平台</h1>
+        <p>鄰里互助，從這裡開始</p>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>姓名 / 暱稱</label>
+          <input type="text" id="reg-name" placeholder="請輸入名稱" />
+        </div>
+        <div class="form-group">
+          <label>年齡</label>
+          <input type="number" id="reg-age" placeholder="例如：28" min="1" max="120" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>性別</label>
+        <select id="reg-gender">
+          <option value="">請選擇</option>
+          <option value="男">男</option>
+          <option value="女">女</option>
+          <option value="其他">其他</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>我具備的技能（可多選）</label>
+        <div class="skill-tags" id="skill-tags">
+          <span class="skill-tag" data-skill="水電修繕">🔧 水電修繕</span>
+          <span class="skill-tag" data-skill="智慧手機教學">📱 智慧手機教學</span>
+          <span class="skill-tag" data-skill="傳統烹飪">🍳 傳統烹飪</span>
+          <span class="skill-tag" data-skill="代購代辦">🛒 代購代辦</span>
+          <span class="skill-tag" data-skill="家具組裝">🪑 家具組裝</span>
+          <span class="skill-tag" data-skill="陪伴聊天">💬 陪伴聊天</span>
+          <span class="skill-tag" data-skill="接送服務">🚗 接送服務</span>
+          <span class="skill-tag" data-skill="電腦維修">💻 電腦維修</span>
+        </div>
+      </div>
+      <button class="btn-primary" onclick="doRegister()">完成註冊並進入平台 →</button>
+    </div>
+  </div>
+</div>
+
+<!-- 頁面 2：首頁 -->
+<div class="page" id="page-home">
+  <div class="home-layout">
+    <aside class="sidebar">
+      <div class="sidebar-title">探索</div>
+      <button class="sidebar-btn active" id="sb-need" onclick="switchTab('need')">
+        <span class="sidebar-icon">🙋</span> 需要幫助
+      </button>
+      <button class="sidebar-btn" id="sb-offer" onclick="switchTab('offer')">
+        <span class="sidebar-icon">💪</span> 提供幫助
+      </button>
+      <div class="sidebar-divider"></div>
+      <div class="sidebar-title">快速操作</div>
+      <button class="sidebar-btn" onclick="switchMainPage('post')">
+        <span class="sidebar-icon">➕</span> 發布我的需求
+      </button>
+      <button class="sidebar-btn" onclick="switchMainPage('profile')">
+        <span class="sidebar-icon">📋</span> 查看互助紀錄
+      </button>
+      <div class="sidebar-user">
+        <div class="name" id="sb-user-name">—</div>
+        <div class="meta" id="sb-user-meta">—</div>
+        <div class="tags" id="sb-user-tags"></div>
+      </div>
+    </aside>
+    <main class="main-content">
+      <div class="tab-panel active" id="tab-need">
+        <div class="content-header">
+          <div>
+            <h2>🙋 需要幫助</h2>
+            <p>以下是社區鄰里正在尋求協助的需求，你能幫上忙嗎？</p>
+          </div>
+        </div>
+        <div class="card-grid" id="need-cards"></div>
+      </div>
+      <div class="tab-panel" id="tab-offer">
+        <div class="content-header">
+          <div>
+            <h2>💪 提供幫助</h2>
+            <p>以下是願意提供協助的社區夥伴，找找看誰能幫你！</p>
+          </div>
+        </div>
+        <div class="card-grid" id="offer-cards"></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- 頁面 3：發布需求 -->
+<div class="page" id="page-post">
+  <div class="home-layout">
+    <aside class="sidebar">
+      <div class="sidebar-title">探索</div>
+      <button class="sidebar-btn" onclick="switchMainPage('home'); switchTab('need')">
+        <span class="sidebar-icon">🙋</span> 需要幫助
+      </button>
+      <button class="sidebar-btn" onclick="switchMainPage('home'); switchTab('offer')">
+        <span class="sidebar-icon">💪</span> 提供幫助
+      </button>
+      <div class="sidebar-divider"></div>
+      <button class="sidebar-btn active">
+        <span class="sidebar-icon">➕</span> 發布我的需求
+      </button>
+      <button class="sidebar-btn" onclick="switchMainPage('profile')">
+        <span class="sidebar-icon">📋</span> 查看互助紀錄
+      </button>
+      <div class="sidebar-user">
+        <div class="name" id="sb-user-name2">—</div>
+        <div class="meta" id="sb-user-meta2">—</div>
+      </div>
+    </aside>
+    <main class="main-content">
+      <div class="content-header">
+        <div>
+          <h2>➕ 發布求助需求</h2>
+          <p>告訴社區夥伴你需要什麼幫助</p>
+        </div>
+      </div>
+      <div class="post-layout">
+        <div class="form-group">
+          <label>需求類型（技能標籤，可多選）</label>
+          <div class="skill-tags" id="post-skill-tags">
+            <span class="skill-tag" data-skill="水電修繕">🔧 水電修繕</span>
+            <span class="skill-tag" data-skill="智慧手機教學">📱 智慧手機教學</span>
+            <span class="skill-tag" data-skill="傳統烹飪">🍳 傳統烹飪</span>
+            <span class="skill-tag" data-skill="代購代辦">🛒 代購代辦</span>
+            <span class="skill-tag" data-skill="家具組裝">🪑 家具組裝</span>
+            <span class="skill-tag" data-skill="陪伴聊天">💬 陪伴聊天</span>
+            <span class="skill-tag" data-skill="接送服務">🚗 接送服務</span>
+            <span class="skill-tag" data-skill="電腦維修">💻 電腦維修</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>需求描述</label>
+          <textarea id="post-desc" placeholder="例如：客廳燈泡壞了，需要幫忙更換，我家在三樓..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>希望時間</label>
+          <input type="text" id="post-time" placeholder="例如：本週六下午 2–4 點" />
+        </div>
+        <button class="btn-primary" onclick="postNeed()">發布求助需求 🚀</button>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- 頁面 4：我的 -->
+<div class="page" id="page-profile">
+  <div class="home-layout">
+    <aside class="sidebar">
+      <div class="sidebar-title">探索</div>
+      <button class="sidebar-btn" onclick="switchMainPage('home'); switchTab('need')">
+        <span class="sidebar-icon">🙋</span> 需要幫助
+      </button>
+      <button class="sidebar-btn" onclick="switchMainPage('home'); switchTab('offer')">
+        <span class="sidebar-icon">💪</span> 提供幫助
+      </button>
+      <div class="sidebar-divider"></div>
+      <button class="sidebar-btn" onclick="switchMainPage('post')">
+        <span class="sidebar-icon">➕</span> 發布我的需求
+      </button>
+      <button class="sidebar-btn active">
+        <span class="sidebar-icon">📋</span> 查看互助紀錄
+      </button>
+      <div class="sidebar-user">
+        <div class="name" id="sb-user-name3">—</div>
+        <div class="meta" id="sb-user-meta3">—</div>
+      </div>
+    </aside>
+    <main class="main-content">
+      <div class="content-header">
+        <div>
+          <h2>👤 我的資料</h2>
+          <p>查看個人技能與互助紀錄</p>
+        </div>
+      </div>
+      <div class="profile-layout">
+        <div class="profile-card">
+          <span class="profile-avatar">🙂</span>
+          <div class="profile-name" id="profile-name">—</div>
+          <div class="profile-meta" id="profile-meta">—</div>
+          <div class="tags profile-tags" id="profile-tags"></div>
+        </div>
+        <div class="history-card">
+          <!-- 邀請 Tab -->
+          <div class="invite-tabs">
+            <button class="invite-tab active" id="itab-sent" onclick="switchInviteTab('sent')">📤 送出的邀請</button>
+            <button class="invite-tab" id="itab-recv" onclick="switchInviteTab('recv')">📥 收到的邀請 <span id="recv-badge"></span></button>
+          </div>
+          <div class="invite-panel active" id="ipanel-sent">
+            <div id="sent-list">
+              <div class="empty-state"><span class="empty-icon">📭</span><p>尚無送出紀錄</p></div>
+            </div>
+          </div>
+          <div class="invite-panel" id="ipanel-recv">
+            <div id="recv-list">
+              <div class="empty-state"><span class="empty-icon">📭</span><p>尚無收到的邀請</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- 拒絕理由 Modal -->
+<div class="modal-overlay" id="reject-modal-overlay">
+  <div class="modal">
+    <h3>拒絕邀請</h3>
+    <div class="modal-sub" id="reject-modal-sub"></div>
+    <div class="modal-detail" id="reject-modal-detail"></div>
+    <label>拒絕原因（選填）</label>
+    <textarea id="reject-reason" placeholder="例如：時間不方便，或其他原因..."></textarea>
+    <div class="btn-row">
+      <button class="btn-cancel" onclick="closeRejectModal()">取消</button>
+      <button class="btn-send" style="background:#dc2626" onclick="confirmReject()">確認拒絕</button>
+    </div>
+  </div>
+</div>
+
+<!-- 送出邀請 Modal -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <h3 id="modal-title">聯絡對方</h3>
+    <div class="modal-sub" id="modal-sub"></div>
+    <div class="modal-detail" id="modal-detail-text"></div>
+    <label>具體說明你的需求或能提供的協助</label>
+    <textarea id="modal-msg" placeholder="例如：我的燈泡在三樓客廳，週六下午方便嗎？"></textarea>
+    <label>希望時間</label>
+    <input type="text" id="modal-time" placeholder="例如：週六下午 2 點" />
+    <div class="btn-row">
+      <button class="btn-cancel" onclick="closeModal()">取消</button>
+      <button class="btn-send"   onclick="sendInvite()">送出邀請 ✉️</button>
+    </div>
+  </div>
+</div>
+
+<!-- 配對成功 Modal -->
+<div class="modal-overlay" id="match-modal-overlay">
+  <div class="modal">
+    <div class="match-header">
+      <span class="match-icon">🎉</span>
+      <div class="match-title">配對成功！</div>
+      <div class="match-sub" id="match-modal-sub"></div>
+    </div>
+    <div class="match-info" id="match-modal-info"></div>
+    <div class="contact-box">
+      <span class="contact-icon">📞</span>
+      <div>
+        <div class="contact-label">對方聯絡方式</div>
+        <div class="contact-value" id="match-modal-contact"></div>
+      </div>
+    </div>
+    <button class="btn-chat" onclick="openChatModal()">開始對話 💬</button>
+    <button class="btn-cancel" style="width:100%;margin-top:10px" onclick="closeMatchModal()">稍後再說</button>
+  </div>
+</div>
+
+<!-- 聊天 Modal -->
+<div class="modal-overlay" id="chat-modal-overlay">
+  <div class="modal" style="max-width:480px">
+    <div class="chat-header">
+      <div class="chat-avatar" id="chat-avatar"></div>
+      <div>
+        <div class="chat-peer-name" id="chat-peer-name"></div>
+        <div class="chat-peer-meta" id="chat-peer-meta"></div>
+      </div>
+      <button onclick="closeChatModal()" style="margin-left:auto;background:none;border:none;font-size:20px;cursor:pointer;color:#9ca3af">✕</button>
+    </div>
+    <div class="chat-messages" id="chat-messages"></div>
+    <div class="chat-input-row">
+      <input class="chat-input" id="chat-input" type="text" placeholder="輸入訊息…" onkeydown="if(event.key==='Enter')sendChatMsg()" />
+      <button class="btn-chat-send" onclick="sendChatMsg()">送出</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+let currentUser = null;
+let pendingCards = new Set();
+// sentInvites: 我送出的邀請；recvInvites: 收到的邀請
+let sentInvites = [];
+let recvInvites = [];
+// 每筆 recvInvite 對應的聊天訊息 { inviteId: [{from, text, time}] }
+let chatLogs = {};
+// 目前正在聊天的對象
+let activeChatInviteId = null;
+
+// 對方的模擬自動回覆語料
+const autoReplies = [
+  '好的，我知道了！',
+  '沒問題，那時間就這樣約定囉！',
+  '收到，我到時候準時過去。',
+  '好，有任何問題再跟我說喔 😊',
+  '確認了，期待到時候見面！',
+];
+
+// 模擬初始收到的邀請資料（展示用，加入聯絡方式）
+const mockRecv = [
+  { id: 'r1', fromName: '志明', fromEmoji: '👷', fromMeta: '32 歲・男', contact: '0912-345-678', time: '本週日下午 3 點', msg: '你好，我看到你需要家具組裝的幫助，我剛好有空可以過去！', status: '等待回覆' },
+  { id: 'r2', fromName: '小梅', fromEmoji: '👩‍💻', fromMeta: '25 歲・女', contact: 'LINE: mei_helper', time: '週六上午 10 點', msg: '我可以幫你教手機，方便的話我到你家去。', status: '等待回覆' },
+];
+
+const needData = [
+  { id:'n1', name:'陳阿嬤', age:72, gender:'女', emoji:'👵', skills:['水電修繕'],     desc:'客廳燈泡壞了，需要協助更換，我住在三樓，爬梯子不方便。' },
+  { id:'n2', name:'小志',   age:35, gender:'男', emoji:'👨', skills:['智慧手機教學'], desc:'買了新手機不會用，希望有人能到家裡教我設定 LINE 與視訊通話。' },
+  { id:'n3', name:'林太太', age:58, gender:'女', emoji:'👩', skills:['代購代辦'],     desc:'行動不便，希望有人能幫我到傳統市場代購蔬菜，每週一次。' },
+  { id:'n4', name:'阿德',   age:45, gender:'男', emoji:'🧔', skills:['家具組裝'],     desc:'IKEA 書架買回來了，但一個人組裝困難，希望找人來協助。' },
+];
+
+const offerData = [
+  { id:'o1', name:'志明',   age:32, gender:'男', emoji:'👷',  skills:['水電修繕','家具組裝'],     desc:'具備5年水電工程經驗，可免費協助社區鄰里做基本修繕，週末有空。' },
+  { id:'o2', name:'小梅',   age:25, gender:'女', emoji:'👩‍💻', skills:['智慧手機教學','電腦維修'], desc:'科技新貴，樂意教長輩使用智慧手機，有耐心，可到府服務。' },
+  { id:'o3', name:'秀英姐', age:50, gender:'女', emoji:'👩‍🍳', skills:['傳統烹飪','陪伴聊天'],   desc:'擅長台灣傳統料理，也很樂意陪獨居長輩聊天、散步。' },
+  { id:'o4', name:'大衛',   age:40, gender:'男', emoji:'🚗',  skills:['接送服務','代購代辦'],     desc:'有車、有空，歡迎需要代購或接送醫院的鄰居聯繫我。' },
+];
+
+document.querySelectorAll('.skill-tags').forEach(container => {
+  container.addEventListener('click', e => {
+    const tag = e.target.closest('.skill-tag');
+    if (tag) tag.classList.toggle('selected');
+  });
+});
+
+function switchMainPage(name) {
+  const map = { home:'page-home', post:'page-post', profile:'page-profile' };
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(map[name]).classList.add('active');
+  document.querySelectorAll('#main-nav .nav-btn').forEach((b,i) => {
+    b.classList.toggle('active', ['home','post','profile'][i] === name);
+  });
+  if (name === 'profile') renderProfile();
+  updateSidebarUser();
+}
+
+function switchTab(type) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + type).classList.add('active');
+  document.getElementById('sb-need').classList.toggle('active',  type === 'need');
+  document.getElementById('sb-offer').classList.toggle('active', type === 'offer');
+}
+
+function switchInviteTab(tab) {
+  document.querySelectorAll('.invite-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.invite-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('itab-' + tab).classList.add('active');
+  document.getElementById('ipanel-' + tab).classList.add('active');
+}
+
+function updateSidebarUser() {
+  if (!currentUser) return;
+  ['', '2', '3'].forEach(s => {
+    const n = document.getElementById('sb-user-name' + s);
+    const m = document.getElementById('sb-user-meta' + s);
+    if (n) n.textContent = currentUser.name;
+    if (m) m.textContent = `${currentUser.age} 歲・${currentUser.gender}`;
+  });
+  const tagsEl = document.getElementById('sb-user-tags');
+  if (tagsEl) tagsEl.innerHTML = currentUser.skills.length
+    ? currentUser.skills.map(s => `<span class="tag" style="font-size:10px">${s}</span>`).join('')
+    : '<span style="font-size:11px;color:#9ca3af">尚未設定技能</span>';
+}
+
+function doRegister() {
+  const name   = document.getElementById('reg-name').value.trim();
+  const age    = document.getElementById('reg-age').value.trim();
+  const gender = document.getElementById('reg-gender').value;
+  const skills = [...document.querySelectorAll('#skill-tags .skill-tag.selected')]
+                   .map(t => t.dataset.skill);
+  if (!name)   { showToast('請填寫姓名 / 暱稱'); return; }
+  if (!age)    { showToast('請填寫年齡'); return; }
+  if (!gender) { showToast('請選擇性別'); return; }
+  currentUser = { name, age, gender, skills };
+  // 載入模擬收到的邀請
+  recvInvites = mockRecv.map(r => Object.assign({}, r));
+  document.getElementById('main-nav').style.display = 'flex';
+  document.getElementById('navbar-user').innerHTML = `<span class="user-chip">👤 ${name}</span>`;
+  renderCards();
+  updateSidebarUser();
+  switchMainPage('home');
+}
+
+function renderCards() {
+  document.getElementById('need-cards').innerHTML  = needData.map(cardNeedHTML).join('');
+  document.getElementById('offer-cards').innerHTML = offerData.map(cardOfferHTML).join('');
+}
+
+function tagsHTML(skills) {
+  return skills.map(s => `<span class="tag">${s}</span>`).join('');
+}
+
+function cardNeedHTML(d) {
+  const pending = pendingCards.has(d.id);
+  return `<div class="card">
+    <div class="card-header">
+      <div class="avatar">${d.emoji}</div>
+      <div>
+        <div class="card-name">${d.name}</div>
+        <div class="card-meta">${d.age} 歲・${d.gender}</div>
+      </div>
+    </div>
+    <div class="tags">${tagsHTML(d.skills)}</div>
+    <div class="card-desc">${d.desc}</div>
+    <button class="btn-card ${pending?'pending':''}" ${pending?'':'onclick="openModal(\'need\',\''+d.id+'\')"'}>
+      ${pending ? '⏳ 等待審核中' : '我來幫忙 🙋'}
+    </button>
+  </div>`;
+}
+
+function cardOfferHTML(d) {
+  const pending = pendingCards.has(d.id);
+  return `<div class="card">
+    <div class="card-header">
+      <div class="avatar">${d.emoji}</div>
+      <div>
+        <div class="card-name">${d.name}</div>
+        <div class="card-meta">${d.age} 歲・${d.gender}</div>
+      </div>
+    </div>
+    <div class="tags">${tagsHTML(d.skills)}</div>
+    <div class="card-desc">${d.desc}</div>
+    <button class="btn-card ${pending?'pending':''}" ${pending?'':'onclick="openModal(\'offer\',\''+d.id+'\')"'}>
+      ${pending ? '⏳ 等待審核中' : '尋求幫助 💬'}
+    </button>
+  </div>`;
+}
+
+let activeModalId = null;
+
+function openModal(type, id) {
+  activeModalId = id;
+  const data = type === 'need' ? needData.find(d => d.id === id) : offerData.find(d => d.id === id);
+  document.getElementById('modal-title').textContent = type === 'need' ? `協助 ${data.name}` : `聯絡 ${data.name}`;
+  document.getElementById('modal-sub').textContent = `${data.age} 歲・${data.gender}・${data.skills.join('、')}`;
+  document.getElementById('modal-detail-text').textContent = data.desc;
+  document.getElementById('modal-msg').value  = '';
+  document.getElementById('modal-time').value = '';
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+  activeModalId = null;
+}
+
+function sendInvite() {
+  const msg  = document.getElementById('modal-msg').value.trim();
+  const time = document.getElementById('modal-time').value.trim();
+  if (!msg)  { showToast('請填寫說明'); return; }
+  if (!time) { showToast('請填寫希望時間'); return; }
+  pendingCards.add(activeModalId);
+  const targetName = document.getElementById('modal-title').textContent.replace(/^(協助|聯絡)\s/, '');
+  sentInvites.push({
+    id: 's' + Date.now(),
+    toName: targetName,
+    time, msg, status: '等待回覆'
+  });
+  closeModal();
+  renderCards();
+  showToast('邀請已送出！等待對方選擇接受或拒絕。');
+}
+
+function postNeed() {
+  const skills = [...document.querySelectorAll('#post-skill-tags .skill-tag.selected')].map(t => t.dataset.skill);
+  const desc = document.getElementById('post-desc').value.trim();
+  const time = document.getElementById('post-time').value.trim();
+  if (!skills.length) { showToast('請選擇至少一個技能標籤'); return; }
+  if (!desc)  { showToast('請填寫需求描述'); return; }
+  if (!time)  { showToast('請填寫希望時間'); return; }
+  needData.unshift({
+    id: 'n' + Date.now(), name: currentUser.name, age: currentUser.age,
+    gender: currentUser.gender, emoji: '🙋', skills, desc: `[${time}] ${desc}`
+  });
+  document.getElementById('post-desc').value = '';
+  document.getElementById('post-time').value = '';
+  document.querySelectorAll('#post-skill-tags .skill-tag').forEach(t => t.classList.remove('selected'));
+  renderCards();
+  showToast('需求已發布！');
+  switchMainPage('home');
+  switchTab('need');
+}
+
+function statusBadge(status) {
+  if (status === '已接受') return `<span class="status-badge accepted">✅ 已接受</span>`;
+  if (status === '已拒絕') return `<span class="status-badge rejected">❌ 已拒絕</span>`;
+  return `<span class="status-badge">⏳ 等待回覆</span>`;
+}
+
+function renderProfile() {
+  if (!currentUser) return;
+  document.getElementById('profile-name').textContent = currentUser.name;
+  document.getElementById('profile-meta').textContent = `${currentUser.age} 歲・${currentUser.gender}`;
+  document.getElementById('profile-tags').innerHTML = currentUser.skills.length
+    ? currentUser.skills.map(s => `<span class="tag">${s}</span>`).join('')
+    : '<span style="font-size:13px;color:#9ca3af">尚未設定技能</span>';
+
+  // 送出的邀請
+  const sl = document.getElementById('sent-list');
+  if (!sentInvites.length) {
+    sl.innerHTML = `<div class="empty-state"><span class="empty-icon">📭</span><p>尚無送出紀錄</p></div>`;
+  } else {
+    sl.innerHTML = sentInvites.map(h => `
+      <div class="history-item">
+        <div class="h-name">對象：${h.toName}</div>
+        <div class="h-time">⏰ ${h.time}</div>
+        <div class="h-msg">${h.msg}</div>
+        ${statusBadge(h.status)}
+        ${h.rejectReason ? `<div style="margin-top:6px;font-size:12px;color:#9ca3af">拒絕原因：${h.rejectReason}</div>` : ''}
+      </div>`).join('');
+  }
+
+  // 收到的邀請（只顯示待回覆）
+  const pending = recvInvites.filter(r => r.status === '等待回覆');
+  const rl = document.getElementById('recv-list');
+  const badge = document.getElementById('recv-badge');
+  if (!pending.length) {
+    rl.innerHTML = `<div class="empty-state"><span class="empty-icon">📭</span><p>目前沒有待處理的邀請</p></div>`;
+    badge.textContent = '';
+  } else {
+    badge.textContent = `(${pending.length})`;
+    rl.innerHTML = pending.map(h => `
+      <div class="history-item">
+        <div class="h-name">來自：${h.fromName}</div>
+        <div class="h-time">⏰ 希望時間：${h.time}</div>
+        <div class="h-msg">${h.msg}</div>
+        <div>
+          <button class="btn-accept" onclick="acceptInvite('${h.id}', this)">✅ 接受</button>
+          <button class="btn-reject" onclick="openRejectModal('${h.id}','${h.fromName}','${h.msg.replace(/'/g,"&#39;")}')">❌ 拒絕</button>
+        </div>
+      </div>`).join('');
+  }
+}
+
+// ── 接受邀請 → 開配對成功 Modal ──
+let activeMatchInv = null;
+
+function acceptInvite(id, btn) {
+  btn.disabled = true;
+  btn.textContent = '處理中...';
+  const inv = recvInvites.find(r => r.id === id);
+  if (!inv) return;
+  inv.status = '已接受';
+  activeMatchInv = inv;
+  // 初始化聊天紀錄（加入對方的第一句問候）
+  if (!chatLogs[inv.id]) {
+    chatLogs[inv.id] = [
+      { from: 'peer', text: inv.msg, time: now() }
+    ];
+  }
+  // 填入配對成功 Modal
+  document.getElementById('match-modal-sub').textContent = `你已接受來自 ${inv.fromName} 的邀請`;
+  document.getElementById('match-modal-info').innerHTML = `
+    <div class="match-info-row"><span class="label">👤 對象</span><span class="value">${inv.fromName}（${inv.fromMeta}）</span></div>
+    <div class="match-info-row"><span class="label">⏰ 時間</span><span class="value">${inv.time}</span></div>
+    <div class="match-info-row"><span class="label">📝 需求</span><span class="value">${inv.msg}</span></div>`;
+  document.getElementById('match-modal-contact').textContent = inv.contact;
+  document.getElementById('match-modal-overlay').classList.add('open');
+  renderProfile();
+}
+
+function closeMatchModal() {
+  document.getElementById('match-modal-overlay').classList.remove('open');
+}
+
+// ── 開啟聊天 Modal ──
+function openChatModal() {
+  if (!activeMatchInv) return;
+  closeMatchModal();
+  const inv = activeMatchInv;
+  activeChatInviteId = inv.id;
+  document.getElementById('chat-avatar').textContent = inv.fromEmoji;
+  document.getElementById('chat-peer-name').textContent = inv.fromName;
+  document.getElementById('chat-peer-meta').textContent = inv.fromMeta;
+  renderChatMessages();
+  document.getElementById('chat-modal-overlay').classList.add('open');
+  document.getElementById('chat-input').focus();
+}
+
+function closeChatModal() {
+  document.getElementById('chat-modal-overlay').classList.remove('open');
+  activeChatInviteId = null;
+}
+
+function now() {
+  return new Date().toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' });
+}
+
+function renderChatMessages() {
+  const logs = chatLogs[activeChatInviteId] || [];
+  const inv  = recvInvites.find(r => r.id === activeChatInviteId);
+  const el   = document.getElementById('chat-messages');
+  el.innerHTML = logs.map(m => {
+    const isMe = m.from === 'me';
+    return `<div class="bubble-wrap ${isMe ? 'me' : ''}">
+      ${!isMe ? `<div class="bubble-avatar">${inv.fromEmoji}</div>` : ''}
+      <div>
+        <div class="bubble-time" style="text-align:${isMe?'right':'left'}">${m.time}</div>
+        <div class="bubble">${m.text}</div>
+      </div>
+      ${isMe ? `<div class="bubble-avatar" style="background:#fff7ed">🙂</div>` : ''}
+    </div>`;
+  }).join('');
+  el.scrollTop = el.scrollHeight;
+}
+
+function sendChatMsg() {
+  const input = document.getElementById('chat-input');
+  const text  = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  if (!chatLogs[activeChatInviteId]) chatLogs[activeChatInviteId] = [];
+  chatLogs[activeChatInviteId].push({ from: 'me', text, time: now() });
+  renderChatMessages();
+  // 對方正在輸入動畫
+  const el = document.getElementById('chat-messages');
+  const typingEl = document.createElement('div');
+  typingEl.className = 'bubble-wrap';
+  const inv = recvInvites.find(r => r.id === activeChatInviteId);
+  typingEl.innerHTML = `<div class="bubble-avatar">${inv.fromEmoji}</div>
+    <div class="typing-indicator">
+      <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
+    </div>`;
+  typingEl.id = 'typing-bubble';
+  el.appendChild(typingEl);
+  el.scrollTop = el.scrollHeight;
+  // 1.2 秒後對方回覆
+  setTimeout(() => {
+    const tEl = document.getElementById('typing-bubble');
+    if (tEl) tEl.remove();
+    const reply = autoReplies[Math.floor(Math.random() * autoReplies.length)];
+    chatLogs[activeChatInviteId].push({ from: 'peer', text: reply, time: now() });
+    renderChatMessages();
+  }, 1200);
+}
+
+// ── 拒絕 Modal ──
+let activeRejectId = null;
+
+function openRejectModal(id, fromName, msg) {
+  activeRejectId = id;
+  document.getElementById('reject-modal-sub').textContent = `來自：${fromName}`;
+  document.getElementById('reject-modal-detail').textContent = msg;
+  document.getElementById('reject-reason').value = '';
+  document.getElementById('reject-modal-overlay').classList.add('open');
+}
+
+function closeRejectModal() {
+  document.getElementById('reject-modal-overlay').classList.remove('open');
+  activeRejectId = null;
+}
+
+function confirmReject() {
+  if (!activeRejectId) return;
+  const reason = document.getElementById('reject-reason').value.trim();
+  const inv = recvInvites.find(r => r.id === activeRejectId);
+  if (inv) {
+    inv.status = '已拒絕';
+    if (reason) inv.rejectReason = reason;
+  }
+  closeRejectModal();
+  showToast('已拒絕邀請。');
+  renderProfile();
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+document.getElementById('modal-overlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('modal-overlay')) closeModal();
+});
+document.getElementById('reject-modal-overlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('reject-modal-overlay')) closeRejectModal();
+});
+document.getElementById('match-modal-overlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('match-modal-overlay')) closeMatchModal();
+});
+document.getElementById('chat-modal-overlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('chat-modal-overlay')) closeChatModal();
+});
+</script>
+</body>
+</html>
