@@ -369,6 +369,103 @@
     padding: 3px 12px; border-radius: 20px;
     font-size: 11px; font-weight: 700; margin-top: 8px;
   }
+  .status-badge.accepted { background: #dcfce7; color: #16a34a; }
+  .status-badge.rejected { background: #fee2e2; color: #dc2626; }
+
+  /* 邀請 Tab */
+  .invite-tabs { display: flex; gap: 0; margin-bottom: 20px; border-bottom: 2px solid #f3f4f6; }
+  .invite-tab {
+    padding: 10px 18px; background: none; border: none; border-bottom: 2px solid transparent;
+    font-size: 14px; font-weight: 700; color: #6b7280; cursor: pointer; margin-bottom: -2px;
+  }
+  .invite-tab.active { color: #F97316; border-bottom-color: #F97316; }
+  .invite-panel { display: none; }
+  .invite-panel.active { display: block; }
+
+  /* 接受 / 拒絕按鈕 */
+  .btn-accept {
+    margin-top: 10px; margin-right: 8px; padding: 8px 20px;
+    background: #16a34a; color: #fff; border: none; border-radius: 8px;
+    font-size: 13px; font-weight: 700; cursor: pointer; transition: background .2s;
+  }
+  .btn-accept:hover { background: #15803d; }
+  .btn-reject {
+    margin-top: 10px; padding: 8px 20px;
+    background: #f3f4f6; color: #dc2626; border: 1.5px solid #fca5a5; border-radius: 8px;
+    font-size: 13px; font-weight: 700; cursor: pointer; transition: background .2s;
+  }
+  .btn-reject:hover { background: #fee2e2; }
+
+  /* 配對成功 Modal */
+  .match-header { text-align: center; margin-bottom: 24px; }
+  .match-icon { font-size: 52px; display: block; margin-bottom: 10px; }
+  .match-title { font-size: 22px; font-weight: 800; color: #16a34a; }
+  .match-sub { font-size: 13px; color: #6b7280; margin-top: 4px; }
+  .match-info {
+    background: #f0fdf4; border: 1.5px solid #bbf7d0; border-radius: 14px;
+    padding: 18px 20px; margin-bottom: 20px;
+  }
+  .match-info-row { display: flex; align-items: center; gap: 10px; padding: 6px 0; font-size: 14px; }
+  .match-info-row .label { color: #6b7280; font-weight: 600; min-width: 60px; }
+  .match-info-row .value { color: #1f2328; font-weight: 700; }
+  .contact-box {
+    background: #fff7ed; border: 1.5px solid #fed7aa; border-radius: 12px;
+    padding: 14px 18px; margin-bottom: 24px; display: flex; align-items: center; gap: 12px;
+  }
+  .contact-box .contact-icon { font-size: 28px; }
+  .contact-box .contact-label { font-size: 12px; color: #9ca3af; }
+  .contact-box .contact-value { font-size: 16px; font-weight: 800; color: #F97316; letter-spacing: .04em; }
+  .btn-chat {
+    width: 100%; padding: 13px; background: #F97316; color: #fff;
+    border: none; border-radius: 12px; font-size: 15px; font-weight: 700;
+    cursor: pointer; transition: background .2s;
+  }
+  .btn-chat:hover { background: #ea6c0a; }
+
+  /* 聊天 Modal */
+  .chat-header {
+    display: flex; align-items: center; gap: 12px;
+    padding-bottom: 16px; margin-bottom: 0; border-bottom: 1.5px solid #f3f4f6;
+  }
+  .chat-avatar {
+    width: 40px; height: 40px; border-radius: 50%; background: #fff7ed;
+    display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0;
+  }
+  .chat-peer-name { font-size: 16px; font-weight: 800; }
+  .chat-peer-meta { font-size: 12px; color: #9ca3af; margin-top: 1px; }
+  .chat-messages {
+    height: 260px; overflow-y: auto; padding: 16px 0;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .bubble-wrap { display: flex; align-items: flex-end; gap: 8px; }
+  .bubble-wrap.me { flex-direction: row-reverse; }
+  .bubble {
+    max-width: 72%; padding: 10px 14px; border-radius: 18px;
+    font-size: 14px; line-height: 1.5;
+  }
+  .bubble-wrap.me .bubble { background: #F97316; color: #fff; border-bottom-right-radius: 4px; }
+  .bubble-wrap:not(.me) .bubble { background: #f3f4f6; color: #1f2328; border-bottom-left-radius: 4px; }
+  .bubble-avatar {
+    width: 30px; height: 30px; border-radius: 50%; background: #fff7ed;
+    display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0;
+  }
+  .bubble-time { font-size: 11px; color: #9ca3af; margin-bottom: 4px; }
+  .typing-indicator { display: flex; gap: 4px; padding: 10px 14px; background: #f3f4f6; border-radius: 18px; border-bottom-left-radius: 4px; width: fit-content; }
+  .typing-dot { width: 7px; height: 7px; border-radius: 50%; background: #9ca3af; animation: typingBounce .8s infinite; }
+  .typing-dot:nth-child(2) { animation-delay: .15s; }
+  .typing-dot:nth-child(3) { animation-delay: .3s; }
+  @keyframes typingBounce { 0%,60%,100% { transform: translateY(0); } 30% { transform: translateY(-6px); } }
+  .chat-input-row { display: flex; gap: 10px; padding-top: 14px; border-top: 1.5px solid #f3f4f6; margin-top: 4px; }
+  .chat-input {
+    flex: 1; padding: 11px 14px; border: 1.5px solid #e5e7eb; border-radius: 24px;
+    font-size: 14px; outline: none; transition: border-color .2s;
+  }
+  .chat-input:focus { border-color: #F97316; }
+  .btn-chat-send {
+    padding: 11px 18px; background: #F97316; color: #fff;
+    border: none; border-radius: 24px; font-size: 14px; font-weight: 700; cursor: pointer;
+  }
+  .btn-chat-send:hover { background: #ea6c0a; }
 
   /* ══════════════════════════════
      Modal
@@ -870,11 +967,19 @@
           <div class="tags profile-tags" id="profile-tags"></div>
         </div>
         <div class="history-card">
-          <h3>📋 互助紀錄</h3>
-          <div id="history-list">
-            <div class="empty-state">
-              <span class="empty-icon">📭</span>
-              <p>尚無互助紀錄</p>
+          <!-- 邀請 Tab -->
+          <div class="invite-tabs">
+            <button class="invite-tab active" id="itab-sent" onclick="window.switchInviteTab('sent')">📤 送出的邀請</button>
+            <button class="invite-tab" id="itab-recv" onclick="window.switchInviteTab('recv')">📥 收到的邀請 <span id="recv-badge"></span></button>
+          </div>
+          <div class="invite-panel active" id="ipanel-sent">
+            <div id="sent-list">
+              <div class="empty-state"><span class="empty-icon">📭</span><p>尚無送出紀錄</p></div>
+            </div>
+          </div>
+          <div class="invite-panel" id="ipanel-recv">
+            <div id="recv-list">
+              <div class="empty-state"><span class="empty-icon">📭</span><p>尚無收到的邀請</p></div>
             </div>
           </div>
         </div>
@@ -883,8 +988,63 @@
   </div>
 </div>
 
+<!-- 拒絕理由 Modal -->
+<div class="modal-overlay" id="reject-modal-overlay">
+  <div class="modal">
+    <h3>拒絕邀請</h3>
+    <div class="modal-sub" id="reject-modal-sub"></div>
+    <div class="modal-detail" id="reject-modal-detail"></div>
+    <label>拒絕原因（選填）</label>
+    <textarea id="reject-reason" placeholder="例如：時間不方便，或其他原因..."></textarea>
+    <div class="btn-row">
+      <button class="btn-cancel" onclick="window.closeRejectModal()">取消</button>
+      <button class="btn-send" style="background:#dc2626" onclick="window.confirmReject()">確認拒絕</button>
+    </div>
+  </div>
+</div>
+
+<!-- 配對成功 Modal -->
+<div class="modal-overlay" id="match-modal-overlay">
+  <div class="modal">
+    <div class="match-header">
+      <span class="match-icon">🎉</span>
+      <div class="match-title">配對成功！</div>
+      <div class="match-sub" id="match-modal-sub"></div>
+    </div>
+    <div class="match-info" id="match-modal-info"></div>
+    <div class="contact-box">
+      <span class="contact-icon">📞</span>
+      <div>
+        <div class="contact-label">對方聯絡方式</div>
+        <div class="contact-value" id="match-modal-contact"></div>
+      </div>
+    </div>
+    <button class="btn-chat" onclick="window.openChatModal()">開始對話 💬</button>
+    <button class="btn-cancel" style="width:100%;margin-top:10px" onclick="window.closeMatchModal()">稍後再說</button>
+  </div>
+</div>
+
+<!-- 聊天 Modal -->
+<div class="modal-overlay" id="chat-modal-overlay">
+  <div class="modal" style="max-width:480px">
+    <div class="chat-header">
+      <div class="chat-avatar" id="chat-avatar"></div>
+      <div>
+        <div class="chat-peer-name" id="chat-peer-name"></div>
+        <div class="chat-peer-meta" id="chat-peer-meta"></div>
+      </div>
+      <button onclick="window.closeChatModal()" style="margin-left:auto;background:none;border:none;font-size:20px;cursor:pointer;color:#9ca3af">✕</button>
+    </div>
+    <div class="chat-messages" id="chat-messages"></div>
+    <div class="chat-input-row">
+      <input class="chat-input" id="chat-input" type="text" placeholder="輸入訊息…" onkeydown="if(event.key==='Enter')window.sendChatMsg()" />
+      <button class="btn-chat-send" onclick="window.sendChatMsg()">送出</button>
+    </div>
+  </div>
+</div>
+
 <!-- ════════════════════════════════
-     Modal
+     送出邀請 Modal
 ════════════════════════════════ -->
 <div class="modal-overlay" id="modal-overlay">
   <div class="modal">
@@ -937,7 +1097,22 @@ const googleProvider = new GoogleAuthProvider();
 let currentUser     = null;
 let currentUserData = null;
 let activeModalData = null;
-let history         = [];
+
+// 邀請相關狀態
+let sentInvites     = [];   // 我送出的邀請（本地快取）
+let recvInvites     = [];   // 我收到的邀請（本地快取）
+let chatLogs        = {};   // { inviteId: [{from, text, time}] }
+let activeChatInviteId = null;
+let activeMatchInv  = null;
+let activeRejectId  = null;
+
+const autoReplies = [
+  '好的，我知道了！',
+  '沒問題，那時間就這樣約定囉！',
+  '收到，我到時候準時過去。',
+  '好，有任何問題再跟我說喔 😊',
+  '確認了，期待到時候見面！',
+];
 
 // ─────────────────────────────────
 //  判斷是否為 localhost（Mock 模式）
@@ -1248,6 +1423,13 @@ window.switchTab = (type) => {
   document.getElementById('sb-offer').classList.toggle('active', type === 'offer');
 };
 
+window.switchInviteTab = (tab) => {
+  document.querySelectorAll('.invite-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.invite-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('itab-' + tab).classList.add('active');
+  document.getElementById('ipanel-' + tab).classList.add('active');
+};
+
 function updateSidebarUser() {
   if (!currentUserData) return;
   ['','2','3'].forEach(s => {
@@ -1369,21 +1551,27 @@ window.sendInvite = async () => {
   const time = document.getElementById('modal-time').value.trim();
   if (!msg)  return showToast('請填寫說明');
   if (!time) return showToast('請填寫希望時間');
+
+  const inviteId = 's' + Date.now();
+  const toName   = activeModalData.d.name;
+
+  // 寫入 Firestore
   try {
     await addDoc(collection(db,'invites'), {
       fromUid:  currentUser.uid,
       fromName: currentUserData.name,
-      toName:   activeModalData.d.name,
+      toName,
       toUid:    activeModalData.d.uid || activeModalData.d.id,
       type:     activeModalData.type,
-      msg, time, status: '等待審核',
+      msg, time, status: '等待回覆',
       createdAt: serverTimestamp()
     });
-    window.closeModal();
-    showToast('邀請已送出！等待對方選擇接受或拒絕。');
-  } catch(e) {
-    showToast('送出失敗，請稍後再試');
-  }
+  } catch(e) { /* Firestore 失敗仍可本地繼續 */ }
+
+  // 本地快取
+  sentInvites.push({ id: inviteId, toName, time, msg, status: '等待回覆' });
+  window.closeModal();
+  showToast('邀請已送出！等待對方選擇接受或拒絕。');
 };
 
 // ─────────────────────────────────
@@ -1418,6 +1606,16 @@ window.postNeed = async () => {
 // ─────────────────────────────────
 //  我的
 // ─────────────────────────────────
+function statusBadge(status) {
+  if (status === '已接受') return `<span class="status-badge accepted">✅ 已接受</span>`;
+  if (status === '已拒絕') return `<span class="status-badge rejected">❌ 已拒絕</span>`;
+  return `<span class="status-badge">⏳ 等待回覆</span>`;
+}
+
+function nowTime() {
+  return new Date().toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' });
+}
+
 async function renderProfile() {
   if (!currentUserData) return;
   document.getElementById('profile-name').textContent = currentUserData.name;
@@ -1426,28 +1624,170 @@ async function renderProfile() {
     ? currentUserData.skills.map(s=>`<span class="tag">${s}</span>`).join('')
     : '<span style="font-size:13px;color:#9ca3af">尚未設定技能</span>';
 
-  const hl = document.getElementById('history-list');
-  hl.innerHTML = '<div style="text-align:center;padding:20px;color:#9ca3af">載入中...</div>';
+  // ── 送出的邀請（本地 + Firestore 合併）
+  const sl = document.getElementById('sent-list');
   try {
     const q = query(collection(db,'invites'), where('fromUid','==',currentUser.uid), orderBy('createdAt','desc'));
     const snap = await getDocs(q);
-    if (snap.empty) {
-      hl.innerHTML = '<div style="text-align:center;padding:40px;color:#9ca3af"><div style="font-size:36px;margin-bottom:8px">📭</div><p>尚無互助紀錄</p></div>';
-    } else {
-      hl.innerHTML = snap.docs.map(d => {
-        const h = d.data();
-        return `<div class="history-item">
-          <div class="h-name">${h.toName}</div>
+    const firestoreSent = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    // 合併本地與 Firestore（以 Firestore 為主）
+    const merged = firestoreSent.length ? firestoreSent : sentInvites;
+    sl.innerHTML = merged.length
+      ? merged.map(h => `<div class="history-item">
+          <div class="h-name">對象：${h.toName}</div>
           <div class="h-time">⏰ ${h.time}</div>
           <div class="h-msg">${h.msg}</div>
-          <span class="status-badge">⏳ ${h.status}</span>
-        </div>`;
-      }).join('');
-    }
+          ${statusBadge(h.status)}
+          ${h.rejectReason ? `<div style="margin-top:6px;font-size:12px;color:#9ca3af">拒絕原因：${h.rejectReason}</div>` : ''}
+        </div>`).join('')
+      : '<div class="empty-state"><span class="empty-icon">📭</span><p>尚無送出紀錄</p></div>';
   } catch(e) {
-    hl.innerHTML = '<div style="text-align:center;padding:20px;color:#9ca3af">載入失敗</div>';
+    sl.innerHTML = sentInvites.length
+      ? sentInvites.map(h => `<div class="history-item">
+          <div class="h-name">對象：${h.toName}</div>
+          <div class="h-time">⏰ ${h.time}</div>
+          <div class="h-msg">${h.msg}</div>
+          ${statusBadge(h.status)}
+        </div>`).join('')
+      : '<div class="empty-state"><span class="empty-icon">📭</span><p>尚無送出紀錄</p></div>';
   }
+
+  // ── 收到的邀請（本地模擬）
+  const rl = document.getElementById('recv-list');
+  const badge = document.getElementById('recv-badge');
+  const pending = recvInvites.filter(r => r.status === '等待回覆');
+  badge.textContent = pending.length ? `(${pending.length})` : '';
+  rl.innerHTML = pending.length
+    ? pending.map(h => `<div class="history-item">
+        <div class="h-name">來自：${h.fromName}</div>
+        <div class="h-time">⏰ 希望時間：${h.time}</div>
+        <div class="h-msg">${h.msg}</div>
+        <div>
+          <button class="btn-accept" onclick="window.acceptInvite('${h.id}', this)">✅ 接受</button>
+          <button class="btn-reject" onclick="window.openRejectModal('${h.id}','${h.fromName}','${h.msg.replace(/'/g,"&#39;")}')">❌ 拒絕</button>
+        </div>
+      </div>`).join('')
+    : '<div class="empty-state"><span class="empty-icon">📭</span><p>目前沒有待處理的邀請</p></div>';
 }
+
+// ─────────────────────────────────
+//  接受邀請 → 配對成功 Modal
+// ─────────────────────────────────
+window.acceptInvite = (id, btn) => {
+  btn.disabled = true; btn.textContent = '處理中...';
+  const inv = recvInvites.find(r => r.id === id);
+  if (!inv) return;
+  inv.status = '已接受';
+  activeMatchInv = inv;
+  if (!chatLogs[inv.id]) {
+    chatLogs[inv.id] = [{ from: 'peer', text: inv.msg, time: nowTime() }];
+  }
+  document.getElementById('match-modal-sub').textContent = `你已接受來自 ${inv.fromName} 的邀請`;
+  document.getElementById('match-modal-info').innerHTML = `
+    <div class="match-info-row"><span class="label">👤 對象</span><span class="value">${inv.fromName}（${inv.fromMeta}）</span></div>
+    <div class="match-info-row"><span class="label">⏰ 時間</span><span class="value">${inv.time}</span></div>
+    <div class="match-info-row"><span class="label">📝 需求</span><span class="value">${inv.msg}</span></div>`;
+  document.getElementById('match-modal-contact').textContent = inv.contact || '（對方尚未填寫聯絡方式）';
+  document.getElementById('match-modal-overlay').classList.add('open');
+  renderProfile();
+};
+
+window.closeMatchModal = () => {
+  document.getElementById('match-modal-overlay').classList.remove('open');
+};
+
+// ─────────────────────────────────
+//  聊天 Modal
+// ─────────────────────────────────
+window.openChatModal = () => {
+  if (!activeMatchInv) return;
+  window.closeMatchModal();
+  const inv = activeMatchInv;
+  activeChatInviteId = inv.id;
+  document.getElementById('chat-avatar').textContent   = inv.fromEmoji || '🙂';
+  document.getElementById('chat-peer-name').textContent = inv.fromName;
+  document.getElementById('chat-peer-meta').textContent = inv.fromMeta || '';
+  renderChatMessages();
+  document.getElementById('chat-modal-overlay').classList.add('open');
+  document.getElementById('chat-input').focus();
+};
+
+window.closeChatModal = () => {
+  document.getElementById('chat-modal-overlay').classList.remove('open');
+  activeChatInviteId = null;
+};
+
+function renderChatMessages() {
+  const logs = chatLogs[activeChatInviteId] || [];
+  const inv  = recvInvites.find(r => r.id === activeChatInviteId);
+  const el   = document.getElementById('chat-messages');
+  el.innerHTML = logs.map(m => {
+    const isMe = m.from === 'me';
+    return `<div class="bubble-wrap ${isMe ? 'me' : ''}">
+      ${!isMe ? `<div class="bubble-avatar">${inv?.fromEmoji || '🙂'}</div>` : ''}
+      <div>
+        <div class="bubble-time" style="text-align:${isMe?'right':'left'}">${m.time}</div>
+        <div class="bubble">${m.text}</div>
+      </div>
+      ${isMe ? `<div class="bubble-avatar" style="background:#fff7ed">🙂</div>` : ''}
+    </div>`;
+  }).join('');
+  el.scrollTop = el.scrollHeight;
+}
+
+window.sendChatMsg = () => {
+  const input = document.getElementById('chat-input');
+  const text  = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  if (!chatLogs[activeChatInviteId]) chatLogs[activeChatInviteId] = [];
+  chatLogs[activeChatInviteId].push({ from: 'me', text, time: nowTime() });
+  renderChatMessages();
+  // 打字動畫
+  const el = document.getElementById('chat-messages');
+  const inv = recvInvites.find(r => r.id === activeChatInviteId);
+  const typingEl = document.createElement('div');
+  typingEl.className = 'bubble-wrap';
+  typingEl.id = 'typing-bubble';
+  typingEl.innerHTML = `<div class="bubble-avatar">${inv?.fromEmoji || '🙂'}</div>
+    <div class="typing-indicator">
+      <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
+    </div>`;
+  el.appendChild(typingEl);
+  el.scrollTop = el.scrollHeight;
+  setTimeout(() => {
+    document.getElementById('typing-bubble')?.remove();
+    const reply = autoReplies[Math.floor(Math.random() * autoReplies.length)];
+    chatLogs[activeChatInviteId].push({ from: 'peer', text: reply, time: nowTime() });
+    renderChatMessages();
+  }, 1200);
+};
+
+// ─────────────────────────────────
+//  拒絕 Modal
+// ─────────────────────────────────
+window.openRejectModal = (id, fromName, msg) => {
+  activeRejectId = id;
+  document.getElementById('reject-modal-sub').textContent    = `來自：${fromName}`;
+  document.getElementById('reject-modal-detail').textContent = msg;
+  document.getElementById('reject-reason').value = '';
+  document.getElementById('reject-modal-overlay').classList.add('open');
+};
+
+window.closeRejectModal = () => {
+  document.getElementById('reject-modal-overlay').classList.remove('open');
+  activeRejectId = null;
+};
+
+window.confirmReject = () => {
+  if (!activeRejectId) return;
+  const reason = document.getElementById('reject-reason').value.trim();
+  const inv = recvInvites.find(r => r.id === activeRejectId);
+  if (inv) { inv.status = '已拒絕'; if (reason) inv.rejectReason = reason; }
+  window.closeRejectModal();
+  showToast('已拒絕邀請。');
+  renderProfile();
+};
 
 // ─────────────────────────────────
 //  Toast
@@ -1464,6 +1804,15 @@ function showToast(msg) {
 // ─────────────────────────────────
 document.getElementById('modal-overlay').addEventListener('click', e => {
   if (e.target === document.getElementById('modal-overlay')) window.closeModal();
+});
+document.getElementById('reject-modal-overlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('reject-modal-overlay')) window.closeRejectModal();
+});
+document.getElementById('match-modal-overlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('match-modal-overlay')) window.closeMatchModal();
+});
+document.getElementById('chat-modal-overlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('chat-modal-overlay')) window.closeChatModal();
 });
 </script>
 </body>
