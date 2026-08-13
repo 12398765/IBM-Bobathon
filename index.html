@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>社區微互助平台</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #f3f4f6;
+    font-family: -apple-system, "Segoe UI", system-ui, "Helvetica Neue", sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    padding: 24px 16px;
+  }
+
+  /* ── 手機外框 ── */
+  .phone-frame {
+    width: 390px;
+    min-height: 780px;
+    background: #fff;
+    border-radius: 40px;
+    border: 8px solid #1f2328;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+
+  /* ── 狀態列 ── */
+  .status-bar {
+    background: #F97316;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 10px 24px 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  /* ── 頁面容器 ── */
+  .page { display: none; flex-direction: column; flex: 1; overflow: hidden; }
+  .page.active { display: flex; }
+
+  /* ── 捲動內容區 ── */
+  .scroll-area { overflow-y: auto; flex: 1; padding: 20px 16px; }
+
+  /* ── 共用標題 ── */
+  .page-header {
+    background: #F97316;
+    color: #fff;
+    padding: 18px 20px 14px;
+    flex-shrink: 0;
+  }
+  .page-header h1 { font-size: 20px; font-weight: 700; }
+  .page-header p  { font-size: 12px; opacity: .85; margin-top: 3px; }
+
+  /* ══════════════════════════════
+     登入頁
+  ══════════════════════════════ */
+  .register-wrap { padding: 24px 20px; }
+  .register-wrap .logo {
+    text-align: center; margin-bottom: 28px;
+  }
+  .register-wrap .logo .icon {
+    font-size: 48px; display: block; margin-bottom: 8px;
+  }
+  .register-wrap .logo h2 {
+    font-size: 22px; font-weight: 800; color: #F97316;
+  }
+  .register-wrap .logo p {
+    font-size: 13px; color: #6b7280; margin-top: 4px;
+  }
+
+  .form-group { margin-bottom: 16px; }
+  .form-group label {
+    display: block; font-size: 13px; font-weight: 600;
+    color: #374151; margin-bottom: 6px;
+  }
+  .form-group input,
+  .form-group select {
+    width: 100%; padding: 10px 12px;
+    border: 1.5px solid #e5e7eb; border-radius: 10px;
+    font-size: 14px; color: #1f2328;
+    outline: none; transition: border-color .2s;
+  }
+  .form-group input:focus,
+  .form-group select:focus { border-color: #F97316; }
+
+  /* 技能標籤多選 */
+  .skill-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+  .skill-tag {
+    padding: 6px 12px; border-radius: 20px;
+    border: 1.5px solid #e5e7eb; font-size: 12px;
+    cursor: pointer; user-select: none;
+    color: #6b7280; transition: all .15s;
+  }
+  .skill-tag.selected {
+    background: #F97316; border-color: #F97316; color: #fff;
+  }
+
+  .btn-primary {
+    width: 100%; padding: 13px;
+    background: #F97316; color: #fff;
+    border: none; border-radius: 12px;
+    font-size: 15px; font-weight: 700;
+    cursor: pointer; margin-top: 8px;
+    transition: background .2s;
+  }
+  .btn-primary:hover { background: #ea6c0a; }
+
+  /* ══════════════════════════════
+     首頁 Tabs
+  ══════════════════════════════ */
+  .tabs {
+    display: flex; background: #fff;
+    border-bottom: 2px solid #f3f4f6;
+    flex-shrink: 0;
+  }
+  .tab-btn {
+    flex: 1; padding: 14px 8px;
+    font-size: 13px; font-weight: 600;
+    color: #9ca3af; background: none; border: none;
+    cursor: pointer; border-bottom: 3px solid transparent;
+    margin-bottom: -2px; transition: all .2s;
+  }
+  .tab-btn.active { color: #F97316; border-bottom-color: #F97316; }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ── 卡片 ── */
+  .card {
+    background: #fff; border-radius: 16px;
+    border: 1.5px solid #e5e7eb;
+    padding: 16px; margin-bottom: 14px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  }
+  .card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .avatar {
+    width: 42px; height: 42px; border-radius: 50%;
+    background: #fff7ed; display: flex; align-items: center;
+    justify-content: center; font-size: 20px; flex-shrink: 0;
+  }
+  .card-name { font-size: 15px; font-weight: 700; color: #1f2328; }
+  .card-meta { font-size: 12px; color: #9ca3af; margin-top: 1px; }
+
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+  .tag {
+    padding: 3px 10px; border-radius: 20px;
+    font-size: 11px; font-weight: 600;
+    background: #fff7ed; color: #F97316;
+    border: 1px solid #fed7aa;
+  }
+
+  .card-desc { font-size: 13px; color: #4b5563; line-height: 1.5; margin-bottom: 12px; }
+
+  .btn-card {
+    width: 100%; padding: 10px;
+    background: #F97316; color: #fff;
+    border: none; border-radius: 10px;
+    font-size: 13px; font-weight: 700;
+    cursor: pointer; transition: background .2s;
+  }
+  .btn-card:hover { background: #ea6c0a; }
+  .btn-card.pending {
+    background: #e5e7eb; color: #9ca3af; cursor: default;
+  }
+
+  /* ── 使用者資訊列 ── */
+  .user-bar {
+    background: #fff7ed; padding: 10px 16px;
+    font-size: 13px; color: #92400e;
+    display: flex; align-items: center; gap: 6px;
+    flex-shrink: 0; border-bottom: 1px solid #fed7aa;
+  }
+
+  /* ══════════════════════════════
+     Modal
+  ══════════════════════════════ */
+  .modal-overlay {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,0.45);
+    display: none; align-items: flex-end;
+    z-index: 100;
+  }
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: #fff; width: 100%;
+    border-radius: 24px 24px 0 0;
+    padding: 24px 20px 32px;
+    animation: slideUp .25s ease;
+  }
+  @keyframes slideUp {
+    from { transform: translateY(40px); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+  }
+
+  .modal-handle {
+    width: 40px; height: 4px; background: #e5e7eb;
+    border-radius: 2px; margin: 0 auto 18px;
+  }
+  .modal h3 { font-size: 17px; font-weight: 800; color: #1f2328; margin-bottom: 4px; }
+  .modal .modal-sub { font-size: 12px; color: #9ca3af; margin-bottom: 16px; }
+
+  .modal-detail {
+    background: #f9fafb; border-radius: 12px;
+    padding: 12px 14px; margin-bottom: 16px;
+  }
+  .modal-detail p { font-size: 13px; color: #4b5563; line-height: 1.6; }
+
+  .modal textarea {
+    width: 100%; padding: 10px 12px;
+    border: 1.5px solid #e5e7eb; border-radius: 10px;
+    font-size: 13px; color: #1f2328; resize: none;
+    outline: none; height: 80px; margin-bottom: 10px;
+  }
+  .modal textarea:focus { border-color: #F97316; }
+
+  .modal input[type="text"] {
+    width: 100%; padding: 10px 12px;
+    border: 1.5px solid #e5e7eb; border-radius: 10px;
+    font-size: 13px; color: #1f2328;
+    outline: none; margin-bottom: 14px;
+  }
+  .modal input[type="text"]:focus { border-color: #F97316; }
+
+  .modal-label { font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 6px; display: block; }
+
+  .btn-row { display: flex; gap: 10px; }
+  .btn-cancel {
+    flex: 1; padding: 11px;
+    background: #f3f4f6; color: #6b7280;
+    border: none; border-radius: 10px;
+    font-size: 13px; font-weight: 700; cursor: pointer;
+  }
+  .btn-send {
+    flex: 2; padding: 11px;
+    background: #F97316; color: #fff;
+    border: none; border-radius: 10px;
+    font-size: 13px; font-weight: 700; cursor: pointer;
+  }
+  .btn-send:hover { background: #ea6c0a; }
+
+  /* ── Toast 通知 ── */
+  .toast {
+    position: absolute; bottom: 80px; left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: #1f2328; color: #fff;
+    padding: 10px 18px; border-radius: 20px;
+    font-size: 13px; white-space: nowrap;
+    opacity: 0; transition: all .3s; z-index: 200;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ── 底部導航 ── */
+  .bottom-nav {
+    display: flex; background: #fff;
+    border-top: 1.5px solid #e5e7eb;
+    flex-shrink: 0;
+  }
+  .nav-btn {
+    flex: 1; padding: 10px 4px 8px;
+    background: none; border: none;
+    font-size: 11px; font-weight: 600;
+    color: #9ca3af; cursor: pointer;
+    display: flex; flex-direction: column;
+    align-items: center; gap: 3px;
+  }
+  .nav-btn .nav-icon { font-size: 20px; }
+  .nav-btn.active { color: #F97316; }
+</style>
+</head>
+<body>
+
+<div class="phone-frame">
+
+  <!-- 狀態列 -->
+  <div class="status-bar">
+    <span>9:41</span>
+    <span>社區微互助</span>
+    <span>●●●</span>
+  </div>
+
+  <!-- ════════════════════════════════
+       頁面 1：註冊
+  ════════════════════════════════ -->
+  <div class="page active" id="page-register">
+    <div class="scroll-area">
+      <div class="register-wrap">
+
+        <div class="logo">
+          <span class="icon">🤝</span>
+          <h2>社區微互助平台</h2>
+          <p>鄰里互助，從這裡開始</p>
+        </div>
+
+        <div class="form-group">
+          <label>姓名 / 暱稱</label>
+          <input type="text" id="reg-name" placeholder="請輸入你的名稱" />
+        </div>
+
+        <div class="form-group">
+          <label>年齡</label>
+          <input type="number" id="reg-age" placeholder="例如：28" min="1" max="120" />
+        </div>
+
+        <div class="form-group">
+          <label>性別</label>
+          <select id="reg-gender">
+            <option value="">請選擇</option>
+            <option value="男">男</option>
+            <option value="女">女</option>
+            <option value="其他">其他</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>我具備的技能（可多選）</label>
+          <div class="skill-tags" id="skill-tags">
+            <span class="skill-tag" data-skill="水電修繕">🔧 水電修繕</span>
+            <span class="skill-tag" data-skill="智慧手機教學">📱 智慧手機教學</span>
+            <span class="skill-tag" data-skill="傳統烹飪">🍳 傳統烹飪</span>
+            <span class="skill-tag" data-skill="代購代辦">🛒 代購代辦</span>
+            <span class="skill-tag" data-skill="家具組裝">🪑 家具組裝</span>
+            <span class="skill-tag" data-skill="陪伴聊天">💬 陪伴聊天</span>
+            <span class="skill-tag" data-skill="接送服務">🚗 接送服務</span>
+            <span class="skill-tag" data-skill="電腦維修">💻 電腦維修</span>
+          </div>
+        </div>
+
+        <button class="btn-primary" onclick="doRegister()">完成註冊並進入平台 →</button>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════
+       頁面 2：首頁（雙 Tab）
+  ════════════════════════════════ -->
+  <div class="page" id="page-home">
+
+    <div class="page-header">
+      <h1>👋 歡迎回來，<span id="welcome-name"></span></h1>
+      <p>找找看社區裡誰需要你，或誰能幫助你</p>
+    </div>
+
+    <div class="user-bar">
+      <span>🏷️</span>
+      <span id="user-skills-bar">你的技能：未設定</span>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('need')">🙋 需要幫助</button>
+      <button class="tab-btn"       onclick="switchTab('offer')">💪 提供幫助</button>
+    </div>
+
+    <div class="scroll-area">
+
+      <!-- 需要幫助區 -->
+      <div class="tab-panel active" id="tab-need">
+        <div id="need-cards"></div>
+      </div>
+
+      <!-- 提供幫助區 -->
+      <div class="tab-panel" id="tab-offer">
+        <div id="offer-cards"></div>
+      </div>
+
+    </div>
+
+    <!-- 底部導航 -->
+    <div class="bottom-nav">
+      <button class="nav-btn active" onclick="showPage('page-home')">
+        <span class="nav-icon">🏠</span>首頁
+      </button>
+      <button class="nav-btn" onclick="showPage('page-post')">
+        <span class="nav-icon">➕</span>發布需求
+      </button>
+      <button class="nav-btn" onclick="showPage('page-profile')">
+        <span class="nav-icon">👤</span>我的
+      </button>
+    </div>
+
+  </div>
+
+  <!-- ════════════════════════════════
+       頁面 3：發布需求（示意）
+  ════════════════════════════════ -->
+  <div class="page" id="page-post">
+    <div class="page-header">
+      <h1>➕ 發布求助需求</h1>
+      <p>告訴大家你需要什麼幫助</p>
+    </div>
+    <div class="scroll-area">
+
+      <div class="form-group" style="margin-top:8px">
+        <label>需求類型（技能標籤）</label>
+        <div class="skill-tags" id="post-skill-tags">
+          <span class="skill-tag" data-skill="水電修繕">🔧 水電修繕</span>
+          <span class="skill-tag" data-skill="智慧手機教學">📱 智慧手機教學</span>
+          <span class="skill-tag" data-skill="傳統烹飪">🍳 傳統烹飪</span>
+          <span class="skill-tag" data-skill="代購代辦">🛒 代購代辦</span>
+          <span class="skill-tag" data-skill="家具組裝">🪑 家具組裝</span>
+          <span class="skill-tag" data-skill="陪伴聊天">💬 陪伴聊天</span>
+          <span class="skill-tag" data-skill="接送服務">🚗 接送服務</span>
+          <span class="skill-tag" data-skill="電腦維修">💻 電腦維修</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>需求描述</label>
+        <textarea id="post-desc" style="width:100%;height:90px;padding:10px 12px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:13px;resize:none;outline:none;" placeholder="例如：客廳燈泡壞了，需要幫忙更換，我家在三樓..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>希望時間</label>
+        <input type="text" id="post-time" placeholder="例如：本週六下午 2–4 點" style="width:100%;padding:10px 12px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:13px;outline:none;" />
+      </div>
+
+      <button class="btn-primary" onclick="postNeed()">發布求助需求 🚀</button>
+    </div>
+
+    <div class="bottom-nav">
+      <button class="nav-btn" onclick="showPage('page-home')"><span class="nav-icon">🏠</span>首頁</button>
+      <button class="nav-btn active" onclick="showPage('page-post')"><span class="nav-icon">➕</span>發布需求</button>
+      <button class="nav-btn" onclick="showPage('page-profile')"><span class="nav-icon">👤</span>我的</button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════
+       頁面 4：我的
+  ════════════════════════════════ -->
+  <div class="page" id="page-profile">
+    <div class="page-header">
+      <h1>👤 我的資料</h1>
+      <p>查看個人技能與互助紀錄</p>
+    </div>
+    <div class="scroll-area">
+      <div class="card" style="margin-top:8px;text-align:center;padding:24px 16px;">
+        <div style="font-size:52px;margin-bottom:10px;">🙂</div>
+        <div style="font-size:18px;font-weight:800;color:#1f2328;" id="profile-name">—</div>
+        <div style="font-size:13px;color:#9ca3af;margin-top:4px;" id="profile-meta">—</div>
+        <div class="tags" style="justify-content:center;margin-top:14px;" id="profile-tags"></div>
+      </div>
+
+      <div class="card">
+        <div style="font-size:14px;font-weight:700;color:#1f2328;margin-bottom:12px;">📋 互助紀錄</div>
+        <div id="history-list" style="font-size:13px;color:#6b7280;">尚無紀錄</div>
+      </div>
+    </div>
+
+    <div class="bottom-nav">
+      <button class="nav-btn" onclick="showPage('page-home')"><span class="nav-icon">🏠</span>首頁</button>
+      <button class="nav-btn" onclick="showPage('page-post')"><span class="nav-icon">➕</span>發布需求</button>
+      <button class="nav-btn active" onclick="showPage('page-profile')"><span class="nav-icon">👤</span>我的</button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════
+       Modal
+  ════════════════════════════════ -->
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal">
+      <div class="modal-handle"></div>
+      <h3 id="modal-title">聯絡對方</h3>
+      <div class="modal-sub" id="modal-sub"></div>
+
+      <div class="modal-detail">
+        <p id="modal-detail-text"></p>
+      </div>
+
+      <label class="modal-label">具體說明你的需求或能提供的協助</label>
+      <textarea id="modal-msg" placeholder="例如：我的燈泡在三樓客廳，週六下午方便嗎？"></textarea>
+
+      <label class="modal-label">希望時間</label>
+      <input type="text" id="modal-time" placeholder="例如：週六下午 2 點" />
+
+      <div class="btn-row">
+        <button class="btn-cancel" onclick="closeModal()">取消</button>
+        <button class="btn-send"   onclick="sendInvite()">送出邀請 ✉️</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+</div><!-- /phone-frame -->
+
+<script>
+// ─────────────────────────────────
+//  資料
+// ─────────────────────────────────
+let currentUser = null;
+let pendingCards = new Set();
+let history = [];
+
+const needData = [
+  { id:'n1', name:'陳阿嬤', age:72, gender:'女', emoji:'👵', skills:['水電修繕'], desc:'客廳燈泡壞了，需要協助更換，我住在三樓，爬梯子不方便。' },
+  { id:'n2', name:'小志',   age:35, gender:'男', emoji:'👨', skills:['智慧手機教學'], desc:'買了新手機不會用，希望有人能到家裡教我設定 LINE 與視訊通話。' },
+  { id:'n3', name:'林太太', age:58, gender:'女', emoji:'👩', skills:['代購代辦'], desc:'行動不便，希望有人能幫我到傳統市場代購蔬菜，每週一次。' },
+  { id:'n4', name:'阿德',   age:45, gender:'男', emoji:'🧔', skills:['家具組裝'], desc:'IKEA 書架買回來了，但一個人組裝困難，希望找人來協助。' },
+];
+
+const offerData = [
+  { id:'o1', name:'志明',   age:32, gender:'男', emoji:'👷', skills:['水電修繕','家具組裝'], desc:'具備5年水電工程經驗，可免費協助社區鄰里做基本修繕。' },
+  { id:'o2', name:'小梅',   age:25, gender:'女', emoji:'👩‍💻', skills:['智慧手機教學','電腦維修'], desc:'科技新貴，樂意教長輩使用智慧手機，有耐心，可到府服務。' },
+  { id:'o3', name:'秀英姐', age:50, gender:'女', emoji:'👩‍🍳', skills:['傳統烹飪','陪伴聊天'], desc:'擅長台灣傳統料理，也很樂意陪獨居長輩聊天、散步。' },
+  { id:'o4', name:'大衛',   age:40, gender:'男', emoji:'🚗', skills:['接送服務','代購代辦'], desc:'有車、有空，歡迎需要代購或接送醫院的鄰居聯繫我。' },
+];
+
+// ─────────────────────────────────
+//  技能標籤互動（登入頁 & 發布頁）
+// ─────────────────────────────────
+document.querySelectorAll('.skill-tags').forEach(container => {
+  container.addEventListener('click', e => {
+    const tag = e.target.closest('.skill-tag');
+    if (tag) tag.classList.toggle('selected');
+  });
+});
+
+// ─────────────────────────────────
+//  頁面切換
+// ─────────────────────────────────
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if (id === 'page-profile') renderProfile();
+}
+
+// ─────────────────────────────────
+//  Tab 切換
+// ─────────────────────────────────
+function switchTab(type) {
+  document.querySelectorAll('.tab-btn').forEach((b,i) => {
+    b.classList.toggle('active', (i===0 && type==='need') || (i===1 && type==='offer'));
+  });
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + type).classList.add('active');
+}
+
+// ─────────────────────────────────
+//  註冊
+// ─────────────────────────────────
+function doRegister() {
+  const name   = document.getElementById('reg-name').value.trim();
+  const age    = document.getElementById('reg-age').value.trim();
+  const gender = document.getElementById('reg-gender').value;
+  const skills = [...document.querySelectorAll('#skill-tags .skill-tag.selected')]
+                   .map(t => t.dataset.skill);
+
+  if (!name) { showToast('請填寫姓名 / 暱稱'); return; }
+  if (!age)  { showToast('請填寫年齡'); return; }
+  if (!gender) { showToast('請選擇性別'); return; }
+
+  currentUser = { name, age, gender, skills };
+
+  document.getElementById('welcome-name').textContent = name;
+  document.getElementById('user-skills-bar').textContent =
+    skills.length ? '你的技能：' + skills.join('、') : '你的技能：尚未設定';
+
+  renderCards();
+  showPage('page-home');
+}
+
+// ─────────────────────────────────
+//  渲染卡片
+// ─────────────────────────────────
+function renderCards() {
+  document.getElementById('need-cards').innerHTML  = needData.map(cardNeedHTML).join('');
+  document.getElementById('offer-cards').innerHTML = offerData.map(cardOfferHTML).join('');
+}
+
+function tagsHTML(skills) {
+  return skills.map(s => `<span class="tag">${s}</span>`).join('');
+}
+
+function cardNeedHTML(d) {
+  const pending = pendingCards.has(d.id);
+  return `
+  <div class="card">
+    <div class="card-header">
+      <div class="avatar">${d.emoji}</div>
+      <div>
+        <div class="card-name">${d.name}</div>
+        <div class="card-meta">${d.age} 歲・${d.gender}</div>
+      </div>
+    </div>
+    <div class="tags">${tagsHTML(d.skills)}</div>
+    <div class="card-desc">${d.desc}</div>
+    <button class="btn-card ${pending?'pending':''}"
+      onclick="${pending?'':'openModal(\'need\',\''+d.id+'\')'}"
+    >${pending?'⏳ 等待審核中':'我來幫忙 🙋'}</button>
+  </div>`;
+}
+
+function cardOfferHTML(d) {
+  const pending = pendingCards.has(d.id);
+  return `
+  <div class="card">
+    <div class="card-header">
+      <div class="avatar">${d.emoji}</div>
+      <div>
+        <div class="card-name">${d.name}</div>
+        <div class="card-meta">${d.age} 歲・${d.gender}</div>
+      </div>
+    </div>
+    <div class="tags">${tagsHTML(d.skills)}</div>
+    <div class="card-desc">${d.desc}</div>
+    <button class="btn-card ${pending?'pending':''}"
+      onclick="${pending?'':'openModal(\'offer\',\''+d.id+'\')'}"
+    >${pending?'⏳ 等待審核中':'尋求幫助 💬'}</button>
+  </div>`;
+}
+
+// ─────────────────────────────────
+//  Modal
+// ─────────────────────────────────
+let activeModalId = null;
+
+function openModal(type, id) {
+  activeModalId = id;
+  const data = type === 'need'
+    ? needData.find(d => d.id === id)
+    : offerData.find(d => d.id === id);
+
+  document.getElementById('modal-title').textContent =
+    type === 'need' ? `協助 ${data.name}` : `聯絡 ${data.name}`;
+  document.getElementById('modal-sub').textContent =
+    `${data.age} 歲・${data.gender}・${data.skills.join('、')}`;
+  document.getElementById('modal-detail-text').textContent = data.desc;
+  document.getElementById('modal-msg').value  = '';
+  document.getElementById('modal-time').value = '';
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+  activeModalId = null;
+}
+
+function sendInvite() {
+  const msg  = document.getElementById('modal-msg').value.trim();
+  const time = document.getElementById('modal-time').value.trim();
+  if (!msg)  { showToast('請填寫說明'); return; }
+  if (!time) { showToast('請填寫希望時間'); return; }
+
+  pendingCards.add(activeModalId);
+  history.push({
+    id: activeModalId,
+    name: document.getElementById('modal-title').textContent,
+    time, msg,
+    status: '等待審核'
+  });
+
+  closeModal();
+  renderCards();
+  showToast('邀請已送出！等待對方選擇接受或拒絕。');
+}
+
+// ─────────────────────────────────
+//  發布需求
+// ─────────────────────────────────
+function postNeed() {
+  const skills = [...document.querySelectorAll('#post-skill-tags .skill-tag.selected')]
+                   .map(t => t.dataset.skill);
+  const desc = document.getElementById('post-desc').value.trim();
+  const time = document.getElementById('post-time').value.trim();
+  if (!skills.length) { showToast('請選擇至少一個技能標籤'); return; }
+  if (!desc)  { showToast('請填寫需求描述'); return; }
+  if (!time)  { showToast('請填寫希望時間'); return; }
+
+  const newId = 'n' + Date.now();
+  needData.unshift({
+    id: newId,
+    name: currentUser.name,
+    age: currentUser.age,
+    gender: currentUser.gender,
+    emoji: '🙋',
+    skills,
+    desc: `[${time}] ${desc}`
+  });
+  document.getElementById('post-desc').value  = '';
+  document.getElementById('post-time').value  = '';
+  document.querySelectorAll('#post-skill-tags .skill-tag').forEach(t => t.classList.remove('selected'));
+
+  renderCards();
+  showToast('需求已發布！');
+  showPage('page-home');
+  switchTab('need');
+}
+
+// ─────────────────────────────────
+//  我的
+// ─────────────────────────────────
+function renderProfile() {
+  if (!currentUser) return;
+  document.getElementById('profile-name').textContent = currentUser.name;
+  document.getElementById('profile-meta').textContent =
+    `${currentUser.age} 歲・${currentUser.gender}`;
+  document.getElementById('profile-tags').innerHTML =
+    currentUser.skills.length
+      ? currentUser.skills.map(s => `<span class="tag">${s}</span>`).join('')
+      : '<span style="font-size:13px;color:#9ca3af">尚未設定技能</span>';
+
+  const hl = document.getElementById('history-list');
+  if (!history.length) {
+    hl.textContent = '尚無紀錄';
+  } else {
+    hl.innerHTML = history.map(h => `
+      <div style="padding:10px 0;border-bottom:1px solid #f3f4f6">
+        <div style="font-weight:700;color:#1f2328">${h.name}</div>
+        <div style="color:#9ca3af;font-size:12px;margin-top:2px">⏰ ${h.time}</div>
+        <div style="color:#4b5563;margin-top:4px">${h.msg}</div>
+        <div style="margin-top:6px">
+          <span style="background:#fff7ed;color:#F97316;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600">⏳ ${h.status}</span>
+        </div>
+      </div>`).join('');
+  }
+}
+
+// ─────────────────────────────────
+//  Toast
+// ─────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ─────────────────────────────────
+//  點擊 overlay 關閉 modal
+// ─────────────────────────────────
+document.getElementById('modal-overlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('modal-overlay')) closeModal();
+});
+</script>
+</body>
+</html>
