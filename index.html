@@ -1169,11 +1169,16 @@ window.doEmailRegister = async () => {
   try {
     const cred = await createUserWithEmailAndPassword(auth, email, pass);
     const emojis = ['👨','👩','🧑','👷','👩‍💻','👩‍🍳'];
-    await setDoc(doc(db,'users', cred.user.uid), {
+    const userData = {
       name, age: parseInt(age), gender, email, skills,
       emoji: emojis[Math.floor(Math.random()*emojis.length)],
       createdAt: serverTimestamp()
-    });
+    };
+    await setDoc(doc(db,'users', cred.user.uid), userData);
+    // 直接設定 currentUser / currentUserData，不等 onAuthStateChanged 重讀
+    currentUser     = cred.user;
+    currentUserData = { ...userData, age: parseInt(age) };
+    enterApp();
   } catch(e) {
     let msg = e.message;
     if (e.code==='auth/email-already-in-use') msg = '此 Email 已被註冊，請直接登入';
