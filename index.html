@@ -988,8 +988,11 @@ onAuthStateChanged(auth, async user => {
     try {
       const snap = await getDoc(doc(db, 'users', user.uid));
       if (snap.exists()) {
+        // Firestore 有資料 → 直接進入 App
         currentUserData = snap.data();
+        enterApp();
       } else {
+        // Firestore 無資料 → 新用戶，補填資料
         currentUserData = {
           name:   user.displayName || user.email.split('@')[0],
           email:  user.email,
@@ -998,8 +1001,10 @@ onAuthStateChanged(auth, async user => {
           age:    '',
           gender: ''
         };
+        showSkillSetup();
       }
     } catch(e) {
+      // Firestore 讀取失敗 → 用基本資料直接進入 App
       currentUserData = {
         name:   user.displayName || user.email.split('@')[0],
         email:  user.email,
@@ -1008,20 +1013,9 @@ onAuthStateChanged(auth, async user => {
         age:    '',
         gender: ''
       };
-    }
-    // 不管 Firestore 成不成功，只要 Firebase Auth 有 user 就進入 App
-    if (currentUserData.age === '' && currentUserData.skills.length === 0
-        && !user.displayName) {
-      // 全新 Google 用戶，補填資料
-      showSkillSetup();
-    } else {
       enterApp();
     }
   } else {
-    try {
-      const result = await getRedirectResult(auth);
-      if (result?.user) return;
-    } catch(e) { /* 忽略 */ }
     currentUser = null; currentUserData = null;
     showAuthPage();
   }
