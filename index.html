@@ -460,6 +460,69 @@
   .empty-state .empty-icon { font-size: 48px; margin-bottom: 12px; display: block; }
   .empty-state p { font-size: 15px; }
 </style>
+
+<!-- Mock 登入：獨立 script，不依賴 Firebase module -->
+<script>
+(function() {
+  var IS_LOCAL = location.hostname === 'localhost' ||
+                 location.hostname === '127.0.0.1' ||
+                 location.protocol === 'file:';
+
+  // 覆寫 signInWithGoogle，比 module 更早定義
+  window.signInWithGoogle = function() {
+    if (!IS_LOCAL) return; // 正式環境交給 module 的 signInWithRedirect
+    localStorage.setItem('isLoggedIn', 'true');
+    localStorage.setItem('user', JSON.stringify({
+      name:   'Google 測試用戶',
+      email:  'test@gmail.com',
+      age:    25,
+      gender: '其他',
+      skills: ['智慧手機教學', '陪伴聊天']
+    }));
+    location.reload();
+  };
+
+  // 頁面載入後恢復登入狀態（DOM ready）
+  document.addEventListener('DOMContentLoaded', function() {
+    if (!IS_LOCAL) return;
+    if (localStorage.getItem('isLoggedIn') !== 'true') return;
+
+    var user = {};
+    try { user = JSON.parse(localStorage.getItem('user') || '{}'); } catch(e) {}
+
+    // 強制切換頁面
+    document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
+    document.getElementById('page-home').classList.add('active');
+
+    // 顯示 Navbar
+    document.getElementById('main-nav').style.display = 'flex';
+    document.getElementById('navbar-user').innerHTML =
+      '<span class="user-chip">👤 ' + (user.name || 'Google 測試用戶') + '</span>' +
+      '<button onclick="window.doLogout()" style="background:rgba(255,255,255,.15);border:none;color:#fff;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;margin-left:4px">登出</button>';
+
+    // 更新 sidebar 名稱
+    ['','2','3'].forEach(function(s) {
+      var n = document.getElementById('sb-user-name' + s);
+      var m = document.getElementById('sb-user-meta' + s);
+      if (n) n.textContent = user.name || 'Google 測試用戶';
+      if (m) m.textContent = (user.age || 25) + ' 歲・' + (user.gender || '其他');
+    });
+
+    // 標記給 Firebase module 跳過 Auth 監聽
+    window.__MOCK_LOGGED_IN__ = true;
+    window.__MOCK_USER__ = user;
+  });
+
+  // 登出也要清 localStorage
+  var _origLogout = window.doLogout;
+  window.doLogout = function() {
+    localStorage.removeItem('isLoggedIn');
+    localStorage.removeItem('user');
+    if (typeof _origLogout === 'function') _origLogout();
+    else location.reload();
+  };
+})();
+</script>
 </head>
 <body>
 
@@ -843,7 +906,7 @@ const IS_LOCAL = location.hostname === 'localhost' || location.hostname === '127
 // ─────────────────────────────────
 onAuthStateChanged(auth, async user => {
   // Mock 模式下跳過 Firebase Auth 監聽
-  if (IS_LOCAL && currentUserData?.isLoggedIn) return;
+  if (window.__MOCK_LOGGED_IN__) return;
   if (user) {
     currentUser = user;
     const snap = await getDoc(doc(db, 'users', user.uid));
